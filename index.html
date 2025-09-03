@@ -4,8 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Мой трекер побед</title>
-  <!-- Скрипт для Telegram WebApp (не мешает локальному запуску) -->
+
+  <!-- Официальный скрипт Telegram WebApp (не мешает локальному запуску) -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
   <style>
     :root{
       --bg:#ffffff; --text:#111111; --muted:#666; --card:#f4f4f4; --accent:#0088cc;
@@ -49,9 +51,10 @@
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  // --- Telegram WebApp (опционально) ---
+  // --- Telegram WebApp (может быть null при локальном запуске) ---
   const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 
+  // --- Тема из Telegram ---
   function applyTheme() {
     if (!tg) return;
     const p = tg.themeParams || {};
@@ -65,8 +68,28 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const hello = document.getElementById('hello');
   function setHello() {
-    const name = tg?.initDataUnsafe?.user?.first_name;
+    const u = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
+    const name = u && u.first_name ? u.first_name : '';
     hello.textContent = name ? `· привет, ${name}` : '';
+  }
+
+  // --- Облако Telegram CloudStorage (обёртки с промисами) ---
+  function cloudSupported() {
+    return !!(tg && tg.CloudStorage);
+  }
+  function cloudGetItem(key) {
+    return new Promise((resolve, reject) => {
+      tg.CloudStorage.getItem(key, (err, val) => {
+        if (err) reject(err); else resolve(val ?? '');
+      });
+    });
+  }
+  function cloudSetItem(key, val) {
+    return new Promise((resolve, reject) => {
+      tg.CloudStorage.setItem(key, String(val), (err, ok) => {
+        if (err || !ok) reject(err || new Error('setItem failed')); else resolve();
+      });
+    });
   }
 
   // --- Утилиты ---
@@ -83,35 +106,52 @@ window.addEventListener('DOMContentLoaded', () => {
     const d = new Date();
     let cur = todayISO();
     let count = 0;
-    // если сегодня пусто, начнём считать с вчера
-    if (!set.has(cur)) {
-      d.setDate(d.getDate() - 1);
-      cur = d.toISOString().slice(0,10);
-    }
-    while (set.has(cur)) {
-      count++;
-      d.setDate(d.getDate() - 1);
-      cur = d.toISOString().slice(0,10);
-    }
+    if (!set.has(cur)) { d.setDate(d.getDate() - 1); cur = d.toISOString().slice(0,10); }
+    while (set.has(cur)) { count++; d.setDate(d.getDate() - 1); cur = d.toISOString().slice(0,10); }
     return count;
   }
 
-  // --- Хранилище ---
-  const KEY = 'victory-tracker-v1';
-  function load() {
-    try { return JSON.parse(localStorage.getItem(KEY)) || { items: [] }; }
-    catch(e){ return { items: [] }; }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
   }
-  function save(state){ localStorage.setItem(KEY, JSON.stringify(state)); }
 
-  let state = load();
+  // --- Хранилище: CloudStorage (если есть) + localStorage ---
+  const KEY = 'victory-tracker-v1';
 
-  // --- Рендер ---
+  async function loadState() {
+    // 1) Пробуем прочитать из облака Телеграма
+    if (cloudSupported()) {
+      try {
+        const raw = await cloudGetItem(KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (_) {}
+    }
+    // 2) Фоллбек: localStorage
+    try { return JSON.parse(localStorage.getItem(KEY)) || { items: [] }; }
+    catch { return { items: [] }; }
+  }
+
+  async function saveState(state) {
+    // Пишем и в облако (если доступно), и локально как бэкап
+    if (cloudSupported()) {
+      try { await cloudSetItem(KEY, JSON.stringify(state)); } catch (_) {}
+    }
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {}
+  }
+
+  // --- Элементы интерфейса ---
   const list = document.getElementById('list');
   const empty = document.getElementById('empty');
   const $total = document.getElementById('total');
   const $streak = document.getElementById('streak');
   const $today = document.getElementById('today');
+  const inp = document.getElementById('inp');
+  const addBtn = document.getElementById('addBtn');
+
+  // --- Состояние ---
+  let state = { items: [] };
 
   function render(){
     list.innerHTML = '';
@@ -134,9 +174,10 @@ window.addEventListener('DOMContentLoaded', () => {
           del.style.minWidth = '36px';
           del.style.padding = '6px 10px';
           del.title = 'Удалить';
-          del.addEventListener('click', () => {
+          del.addEventListener('click', async () => {
             state.items = state.items.filter(x=>x.id!==item.id);
-            save(state); render();
+            await saveState(state);
+            render();
           });
 
           const right = document.createElement('div');
@@ -152,17 +193,7 @@ window.addEventListener('DOMContentLoaded', () => {
     $today.textContent = state.items.filter(i=>i.date===todayISO()).length;
   }
 
-  function escapeHtml(s){
-    return s.replace(/[&<>"']/g, c => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[c]));
-  }
-
-  // --- Логика добавления ---
-  const inp = document.getElementById('inp');
-  const addBtn = document.getElementById('addBtn');
-
-  function addVictory(textFromBtn){
+  async function addVictory(textFromBtn){
     const t = (textFromBtn ?? inp.value).trim();
     if (!t) return;
     state.items.push({
@@ -171,40 +202,46 @@ window.addEventListener('DOMContentLoaded', () => {
       date: todayISO(),
       ts: Date.now()
     });
-    save(state);
+    await saveState(state);
     render();
     inp.value = '';
   }
 
-  addBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    addVictory();
-  });
+  // --- Инициализация ---
+  (async () => {
+    // Telegram готов
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      applyTheme();
+      setHello();
+      tg.onEvent('themeChanged', applyTheme);
 
-  inp.addEventListener('keydown', (e)=>{
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addVictory();
+      // Главная кнопка Telegram
+      tg.MainButton.setParams({ text: 'Добавить победу' });
+      tg.MainButton.onClick(() => addVictory());
+      tg.MainButton.show();
     }
-  });
 
-  // --- Telegram MainButton и темы (если внутри Telegram) ---
-  if (tg) {
-    tg.ready();
-    tg.expand();
-    applyTheme();
-    setHello();
+    // Загружаем состояние и рендерим
+    state = await loadState();
+    render();
 
-    tg.MainButton.setParams({ text: 'Добавить победу' });
-    tg.MainButton.onClick(() => addVictory());
-    tg.MainButton.show();
+    // Обработчики
+    addBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await addVictory();
+    });
 
-    tg.onEvent('themeChanged', applyTheme);
-  }
-
-  // Первый рендер
-  render();
+    inp.addEventListener('keydown', async (e)=>{
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        await addVictory();
+      }
+    });
+  })();
 });
 </script>
 </body>
 </html>
+

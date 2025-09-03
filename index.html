@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Мой трекер побед</title>
+  <!-- Скрипт для Telegram WebApp (не мешает локальному запуску) -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root{
+      --bg:#ffffff; --text:#111111; --muted:#666; --card:#f4f4f4; --accent:#0088cc;
+    }
+    * { box-sizing: border-box; }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text);}
+    .wrap{max-width:720px;margin:0 auto;padding:16px 16px 80px;}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+    header h1{font-size:20px;margin:0;}
+    .stats{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0 16px;}
+    .chip{background:var(--card);padding:10px 12px;border-radius:12px;font-size:14px}
+    .row{display:flex;gap:8px;margin-bottom:12px}
+    input[type="text"]{flex:1;padding:12px;border:1px solid #ddd;border-radius:12px;font-size:16px;background:#fff}
+    button{padding:12px 14px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:600;font-size:16px;cursor:pointer}
+    ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+    li{background:var(--card);padding:10px 12px;border-radius:12px;display:flex;align-items:center;justify-content:space-between}
+    .muted{color:var(--muted);font-size:12px}
+    .empty{color:var(--muted);text-align:center;margin-top:24px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Трекер побед <span id="hello"></span></h1>
+    </header>
+
+    <div class="stats">
+      <div class="chip">Всего: <b id="total">0</b></div>
+      <div class="chip">Серия дней: <b id="streak">0</b></div>
+      <div class="chip">Сегодня: <b id="today">0</b></div>
+    </div>
+
+    <div class="row">
+      <input id="inp" type="text" placeholder="Какая маленькая победа сегодня?" />
+      <button id="addBtn" type="button">Добавить</button>
+    </div>
+
+    <ul id="list"></ul>
+    <div id="empty" class="empty" style="display:none;">Пока пусто. Начни с маленькой победы 💪</div>
+  </div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  // --- Telegram WebApp (опционально) ---
+  const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+
+  function applyTheme() {
+    if (!tg) return;
+    const p = tg.themeParams || {};
+    const css = document.documentElement.style;
+    if (p.bg_color) css.setProperty('--bg', '#' + p.bg_color);
+    if (p.text_color) css.setProperty('--text', '#' + p.text_color);
+    if (p.hint_color) css.setProperty('--muted', '#' + p.hint_color);
+    if (p.secondary_bg_color) css.setProperty('--card', '#' + p.secondary_bg_color);
+    if (p.button_color) css.setProperty('--accent', '#' + p.button_color);
+  }
+
+  const hello = document.getElementById('hello');
+  function setHello() {
+    const name = tg?.initDataUnsafe?.user?.first_name;
+    hello.textContent = name ? `· привет, ${name}` : '';
+  }
+
+  // --- Утилиты ---
+  const uuid = () =>
+    (window.crypto && typeof window.crypto.randomUUID === 'function')
+      ? window.crypto.randomUUID()
+      : 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
+
+  const todayISO = () => new Date().toISOString().slice(0,10);
+
+  function calcStreak(items){
+    const set = new Set(items.map(i=>i.date));
+    if (set.size === 0) return 0;
+    const d = new Date();
+    let cur = todayISO();
+    let count = 0;
+    // если сегодня пусто, начнём считать с вчера
+    if (!set.has(cur)) {
+      d.setDate(d.getDate() - 1);
+      cur = d.toISOString().slice(0,10);
+    }
+    while (set.has(cur)) {
+      count++;
+      d.setDate(d.getDate() - 1);
+      cur = d.toISOString().slice(0,10);
+    }
+    return count;
+  }
+
+  // --- Хранилище ---
+  const KEY = 'victory-tracker-v1';
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || { items: [] }; }
+    catch(e){ return { items: [] }; }
+  }
+  function save(state){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+  let state = load();
+
+  // --- Рендер ---
+  const list = document.getElementById('list');
+  const empty = document.getElementById('empty');
+  const $total = document.getElementById('total');
+  const $streak = document.getElementById('streak');
+  const $today = document.getElementById('today');
+
+  function render(){
+    list.innerHTML = '';
+    if (state.items.length === 0) {
+      empty.style.display = 'block';
+    } else {
+      empty.style.display = 'none';
+      state.items
+        .slice()
+        .sort((a,b)=> b.ts - a.ts)
+        .forEach(item=>{
+          const li = document.createElement('li');
+
+          const left = document.createElement('div');
+          left.innerHTML = `<div>${escapeHtml(item.text)}</div><div class="muted">${item.date}</div>`;
+
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.textContent = '×';
+          del.style.minWidth = '36px';
+          del.style.padding = '6px 10px';
+          del.title = 'Удалить';
+          del.addEventListener('click', () => {
+            state.items = state.items.filter(x=>x.id!==item.id);
+            save(state); render();
+          });
+
+          const right = document.createElement('div');
+          right.appendChild(del);
+
+          li.appendChild(left);
+          li.appendChild(right);
+          list.appendChild(li);
+        });
+    }
+    $total.textContent = state.items.length;
+    $streak.textContent = calcStreak(state.items);
+    $today.textContent = state.items.filter(i=>i.date===todayISO()).length;
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  // --- Логика добавления ---
+  const inp = document.getElementById('inp');
+  const addBtn = document.getElementById('addBtn');
+
+  function addVictory(textFromBtn){
+    const t = (textFromBtn ?? inp.value).trim();
+    if (!t) return;
+    state.items.push({
+      id: uuid(),
+      text: t,
+      date: todayISO(),
+      ts: Date.now()
+    });
+    save(state);
+    render();
+    inp.value = '';
+  }
+
+  addBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    addVictory();
+  });
+
+  inp.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addVictory();
+    }
+  });
+
+  // --- Telegram MainButton и темы (если внутри Telegram) ---
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    applyTheme();
+    setHello();
+
+    tg.MainButton.setParams({ text: 'Добавить победу' });
+    tg.MainButton.onClick(() => addVictory());
+    tg.MainButton.show();
+
+    tg.onEvent('themeChanged', applyTheme);
+  }
+
+  // Первый рендер
+  render();
+});
+</script>
+</body>
+</html>

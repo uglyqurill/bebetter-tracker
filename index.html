@@ -613,6 +613,23 @@ window.addEventListener('DOMContentLoaded', () => {
   ['body','mind','meaning'].forEach(bindInput);
 
   /* ===== Telegram MainButton ===== */
+  if (tg){
+    tg.ready(); tg.expand(); applyTheme(); setHello();
+    tg.onEvent('themeChanged', applyTheme);
+    tg.MainButton.setParams({ text: 'Добавить победу' });
+    tg.MainButton.onClick(async ()=>{
+      for (const s of ['body','mind','meaning']){
+        const t = inputs[s].value.trim();
+        if (t){
+          state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
+          inputs[s].value='';
+          await doSaveAndRerender();
+          break;
+        }
+      }
+    });
+    tg.MainButton.show();
+  }
 
   /* ===== Init ===== */
   (async ()=>{

@@ -65,7 +65,11 @@
     .sep{height:1px;background:linear-gradient(90deg,transparent, rgba(255,255,255,.25), transparent);margin:12px 0}
 
     /* ===== Горизонтальный календарь ===== */
-    .days{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}
+    .days{
+      display:flex;gap:10px;overflow-x:auto;overflow-y:visible;
+      padding:8px 0; /* чтобы рамки/тени не обрезались */
+      scroll-snap-type:x proximity
+    }
     .day{
       flex:0 0 auto;scroll-snap-align:center;width:64px;border-radius:16px;padding:10px 8px;
       text-align:center;cursor:pointer;user-select:none;transition:transform .12s ease;
@@ -81,12 +85,18 @@
     }
     .day .dow{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
     .day .num{font-size:20px;font-weight:900;line-height:1.1;margin:4px 0 6px;color:#fff}
+
+    /* Кольцо-секторы (тонкий контур): маска показывает только обводку */
     .ring{
-      width:38px;height:38px;border-radius:999px;margin:0 auto;border:2px solid rgba(255,255,255,.18);
-      background: conic-gradient(var(--empty) 0 120deg, var(--empty) 120deg 240deg, var(--empty) 240deg 360deg);
-      position:relative;display:grid;place-items:center;font-size:10px;color:#E5F1FF;
+      --seg1: var(--empty);
+      --seg2: var(--empty);
+      --seg3: var(--empty);
+      width:38px;height:38px;border-radius:999px;margin:0 auto;
+      background: conic-gradient(var(--seg1) 0 120deg, var(--seg2) 120deg 240deg, var(--seg3) 240deg 360deg);
+      border:2px solid rgba(255,255,255,.18);
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
+              mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
     }
-    .ring::after{content:""; position:absolute; inset:6px; border-radius:999px; background:rgba(255,255,255,.06);}
 
     /* ===== Прогресс-бары сфер ===== */
     .spheres{display:grid;grid-template-columns:1fr;gap:12px;margin:12px 0 10px}
@@ -102,15 +112,10 @@
       height:14px;border-radius:999px;background:rgba(255,255,255,.12);
       border:1px solid rgba(255,255,255,.2);overflow:hidden;position:relative
     }
-    .fill{
-      height:100%;width:0%;
-      transition: width .35s ease-out;
-    }
-    /* сфера-цвета для заполнения */
+    .fill{height:100%;width:0%;transition: width .35s ease-out;}
     .sphere[data-s="body"] .fill{ background:linear-gradient(90deg, var(--body), #5ff4e3); }
     .sphere[data-s="mind"] .fill{ background:linear-gradient(90deg, var(--mind), #a5d8ff); }
     .sphere[data-s="meaning"] .fill{ background:linear-gradient(90deg, var(--meaning), #d8c9ff); }
-
     .pct{font-variant-numeric:tabular-nums;color:#fff;font-weight:800}
 
     /* ===== Подпись дня + info ===== */
@@ -122,8 +127,8 @@
         linear-gradient(#0f3f87,#0c3270) padding-box,
         linear-gradient(45deg, #19E0FF, #7AE7FF) border-box;
       border:1px solid transparent;
-      display:grid;place-items:center;cursor:pointer;
-      transition:transform .12s ease; color:#fff; font-weight:900;
+      display:grid;place-items:center;cursor:pointer;transition:transform .12s ease;
+      color:#fff; font-weight:900; /* жирная i */
     }
     .icon-btn:hover{transform:translateY(-1px)}
 
@@ -241,7 +246,7 @@
           <input id="inp-body" type="text" placeholder="Напр.: 30 мин ходьбы · зарядка" />
           <button class="submit" id="btn-body" title="Добавить победу">✔</button>
         </div>
-        <div class="small">Каждая победа: +3 к «Телу»</div>
+        <div class="small">1-я победа дня: +3, последующие сегодня: +1</div>
       </div>
 
       <div class="input-card" data-s="mind">
@@ -250,7 +255,7 @@
           <input id="inp-mind" type="text" placeholder="Напр.: 2 фокус-сета · заметка CBT" />
           <button class="submit" id="btn-mind" title="Добавить победу">✔</button>
         </div>
-        <div class="small">Каждая победа: +3 к «Уму»</div>
+        <div class="small">1-я победа дня: +3, последующие сегодня: +1</div>
       </div>
 
       <div class="input-card" data-s="meaning">
@@ -259,7 +264,7 @@
           <input id="inp-meaning" type="text" placeholder="Напр.: 10 мин медитации · акт ценности" />
           <button class="submit" id="btn-meaning" title="Добавить победу">✔</button>
         </div>
-        <div class="small">Каждая победа: +3 к «Смыслу»</div>
+        <div class="small">1-я победа дня: +3, последующие сегодня: +1</div>
       </div>
     </div>
 
@@ -307,12 +312,11 @@ window.addEventListener('DOMContentLoaded', () => {
   /* ===== Telegram WebApp ===== */
   const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 
-  // Берём из темы только акцент, НО НЕ color текста (оставляем белый везде)
+  // Берём из темы только акцент, НО НЕ цвет текста (оставляем белый)
   function applyTheme() {
     if (!tg) return;
     const p = tg.themeParams || {};
     const css = document.documentElement.style;
-    // игнорируем p.text_color, чтобы текст оставался белым
     if (p.button_color) css.setProperty('--accent', '#' + p.button_color);
     if (p.button_color) css.setProperty('--accent-2', '#' + p.button_color);
   }
@@ -350,7 +354,7 @@ window.addEventListener('DOMContentLoaded', () => {
   let state = {
     items: [], // {id,text,sphere:'body'|'mind'|'meaning',date:'YYYY-MM-DD',ts:number}
     scores: { body:0, mind:0, meaning:0 }, // 0..100
-    lastCalc: null // 'YYYY-MM-DD' — последний день применения штрафов
+    createdAt: null // когда начали вести учёт
   };
 
   async function loadState(){
@@ -364,58 +368,45 @@ window.addEventListener('DOMContentLoaded', () => {
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e){}
   }
 
-  /* ===== Scoring =====
-     +3 за победу по сфере; -5 за день без побед по сфере (не ниже 0).
-     Штрафы считаем при загрузке: от lastCalc+1 до вчера включительно.
+  /* ===== Подсчёт очков заново (детерминированно) =====
+     Правила:
+     - за день и сферу: +3 за первую победу; +1 за каждую следующую в этот же день;
+     - за день без побед в сфере (прошедший день): -5;
+     - итог не ниже 0, не выше 100;
+     - за текущий день без побед штраф НЕ начисляем.
   */
-  function dayHasSphere(iso, sphere){
-    return state.items.some(it=> it.date===iso && it.sphere===sphere);
-  }
-  async function applyPenaltiesUpToToday(){
+  function recomputeScores(){
     const today = todayISO();
-    if (!state.lastCalc){
-      state.lastCalc = today;
-      await saveState(state);
-      return;
-    }
-    let d = addDays(state.lastCalc, +1);
-    const yesterday = addDays(today, -1);
-    while (new Date(d) <= new Date(yesterday)){
+    const allDates = state.items.map(i=>i.date);
+    const minItemDate = allDates.length ? allDates.reduce((a,b)=> a<b?a:b) : today;
+    const startDate = state.createdAt ? (state.createdAt < minItemDate ? state.createdAt : minItemDate) : minItemDate;
+
+    const counts = {}; // counts[iso] = {body:n, mind:n, meaning:n}
+    state.items.forEach(it=>{
+      counts[it.date] = counts[it.date] || {body:0,mind:0,meaning:0};
+      counts[it.date][it.sphere] = (counts[it.date][it.sphere]||0) + 1;
+    });
+
+    const scores = { body:0, mind:0, meaning:0 };
+
+    // Идём по дням от startDate до today
+    let d = startDate;
+    while (new Date(d) <= new Date(today)){
+      const dayCounts = counts[d] || {body:0,mind:0,meaning:0};
       ['body','mind','meaning'].forEach(s=>{
-        if (!dayHasSphere(d,s)){
-          state.scores[s] = Math.max(0, (state.scores[s]||0) - 5);
+        const c = dayCounts[s]||0;
+        if (c>0){
+          scores[s] += 3 + (c-1)*1;  // 1-я +3, остальные +1
+        } else {
+          if (d !== today) scores[s] -= 5; // штраф только за прошедшие дни
         }
+        if (scores[s] < 0) scores[s] = 0;
+        if (scores[s] > 100) scores[s] = 100;
       });
       d = addDays(d, +1);
     }
-    state.lastCalc = today;
-    clampScores();
-    await saveState(state);
-  }
-  function addVictory(sphere, text, dateISO){
-    const t = (text||'').trim();
-    if (!t) return false;
-    const iso = dateISO || selectedDate;
-    state.items.push({ id: uuid(), text: t, sphere, date: iso, ts: Date.now() });
-    state.scores[sphere] = Math.min(100, (state.scores[sphere]||0) + 3);
-    clampScores();
-    return true;
-  }
-  function editVictory(id, newText){
-    const it = state.items.find(x=> x.id===id);
-    if (it && newText.trim()){ it.text = newText.trim(); return true; }
-    return false;
-  }
-  function deleteVictory(id){
-    const before = state.items.length;
-    state.items = state.items.filter(x=> x.id!==id);
-    return before !== state.items.length;
-  }
-  function clampScores(){
-    ['body','mind','meaning'].forEach(s=>{
-      if (state.scores[s] < 0) state.scores[s]=0;
-      if (state.scores[s] > 100) state.scores[s]=100;
-    });
+
+    state.scores = scores;
   }
 
   /* ===== UI refs ===== */
@@ -461,7 +452,11 @@ window.addEventListener('DOMContentLoaded', () => {
     return `${dd}.${mm}.${dt.getFullYear()}`;
   }
 
-  /* ===== Calendar render ===== */
+  /* ===== Calendar ===== */
+  function dayHasSphere(iso, sphere){
+    return state.items.some(it=> it.date===iso && it.sphere===sphere);
+  }
+
   function renderDays(){
     daysEl.innerHTML = '';
     const start = addDays(todayISO(), -21);
@@ -481,14 +476,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
       const r = document.createElement('div');
       r.className = 'ring';
-      const s1 = dayHasSphere(cur,'body') ? 'var(--body)' : 'var(--empty)';
-      const s2 = dayHasSphere(cur,'mind') ? 'var(--mind)' : 'var(--empty)';
-      const s3 = dayHasSphere(cur,'meaning') ? 'var(--meaning)' : 'var(--empty)';
-      r.style.background = `conic-gradient(${s1} 0 120deg, ${s2} 120deg 240deg, ${s3} 240deg 360deg)`;
-
-      if (cur===todayISO()){
-        r.style.boxShadow = '0 0 0 2px rgba(25,224,255,.35) inset, 0 0 20px rgba(25,224,255,.18)';
-      }
+      r.style.setProperty('--seg1', dayHasSphere(cur,'body') ? 'var(--body)' : 'var(--empty)');
+      r.style.setProperty('--seg2', dayHasSphere(cur,'mind') ? 'var(--mind)' : 'var(--empty)');
+      r.style.setProperty('--seg3', dayHasSphere(cur,'meaning') ? 'var(--meaning)' : 'var(--empty)');
 
       dv.appendChild(dow);
       dv.appendChild(num);
@@ -528,10 +518,16 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   function renderDayTitle(){ dayLabelEl.textContent = labelForDay(selectedDate); }
 
-  /* ===== List of victories for selected day ===== */
+  /* ===== List & actions ===== */
   function sphereLabel(s){ return s==='body' ? 'Тело' : (s==='mind' ? 'Ум' : 'Смысл'); }
   function sphereColor(s){ return s==='body' ? 'var(--body)' : (s==='mind' ? 'var(--mind)' : 'var(--meaning)'); }
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  async function doSaveAndRerender(){
+    recomputeScores();
+    await saveState(state);
+    renderBars(); renderDays(); renderList(); streakEl.textContent = calcStreak();
+  }
 
   function renderList(){
     const items = state.items.filter(i=> i.date===selectedDate).sort((a,b)=> b.ts - a.ts);
@@ -554,10 +550,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
       bEdit.addEventListener('click', async ()=>{
         const nv = prompt('Измени текст победы:', it.text);
-        if (nv && nv.trim()){ if (editVictory(it.id, nv)){ await saveState(state); renderList(); } }
+        if (nv && nv.trim()){
+          it.text = nv.trim();
+          await doSaveAndRerender();
+        }
       });
       bDel.addEventListener('click', async ()=>{
-        if (confirm('Удалить эту победу?')){ if (deleteVictory(it.id)){ await saveState(state); renderDays(); renderList(); } }
+        if (confirm('Удалить эту победу?')){
+          state.items = state.items.filter(x=>x.id!==it.id);
+          await doSaveAndRerender();
+        }
       });
 
       act.appendChild(bEdit); act.appendChild(bDel);
@@ -572,23 +574,23 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.remove('show'));
   modal.addEventListener('click', (e)=>{ if (e.target===modal) modal.classList.remove('show'); });
 
-  /* ===== Inputs ===== */
+  /* ===== Inputs binding (однократно объявленные inputs/buttons) ===== */
   function bindInput(s){
     buttons[s].addEventListener('click', async ()=>{
-      if (addVictory(s, inputs[s].value, selectedDate)){
-        inputs[s].value='';
-        await saveState(state);
-        renderBars(); renderDays(); renderList(); streakEl.textContent = calcStreak();
-      }
+      const t = inputs[s].value.trim();
+      if (!t) return;
+      state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
+      inputs[s].value='';
+      await doSaveAndRerender();
     });
     inputs[s].addEventListener('keydown', async (e)=>{
       if (e.key==='Enter'){
         e.preventDefault();
-        if (addVictory(s, inputs[s].value, selectedDate)){
-          inputs[s].value='';
-          await saveState(state);
-          renderBars(); renderDays(); renderList(); streakEl.textContent = calcStreak();
-        }
+        const t = inputs[s].value.trim();
+        if (!t) return;
+        state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
+        inputs[s].value='';
+        await doSaveAndRerender();
       }
     });
   }
@@ -601,25 +603,29 @@ window.addEventListener('DOMContentLoaded', () => {
     tg.MainButton.setParams({ text: 'Добавить победу' });
     tg.MainButton.onClick(async ()=>{
       for (const s of ['body','mind','meaning']){
-        if (inputs[s].value.trim()){
-          if (addVictory(s, inputs[s].value, selectedDate)){
-            inputs[s].value='';
-            await saveState(state);
-            renderBars(); renderDays(); renderList(); streakEl.textContent = calcStreak();
-            break;
-          }
+        const t = inputs[s].value.trim();
+        if (t){
+          state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
+          inputs[s].value='';
+          await doSaveAndRerender();
+          break;
         }
       }
     });
     tg.MainButton.show();
+  } else {
+    // В обычном браузере показываем нейтральное приветствие
+    document.getElementById('hello').textContent = 'Привет!';
   }
 
   /* ===== Init ===== */
   (async ()=>{
     state = await loadState();
-    state.scores = state.scores || { body:0, mind:0, meaning:0 };
-    clampScores();
-    await applyPenaltiesUpToToday();
+    if (!state.createdAt){ state.createdAt = todayISO(); }
+    if (!state.scores){ state.scores = {body:0,mind:0,meaning:0}; }
+
+    recomputeScores();
+    await saveState(state);
 
     renderBars();
     renderDayTitle();

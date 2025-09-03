@@ -10,28 +10,23 @@
 
   <style>
     :root{
-      /* Палитра */
       --text:#ffffff;
       --muted:#C7E2FF;
 
-      --bg1:#0F5CC0; /* ярко-синий (небо/океан) */
+      --bg1:#0F5CC0;
       --bg2:#0049A8;
       --bg3:#003C99;
       --bg4:#003080;
 
       --card:#0b3a7a;
-      --line:#1b5fd1;
-      --accent:#19E0FF;    /* циан-акцент */
-      --accent-2:#7AE7FF;  /* светлый циан */
+      --accent:#19E0FF;
+      --accent-2:#7AE7FF;
 
-      /* цвета сфер */
-      --body:#2dd4bf;      /* мятно-циановый */
-      --mind:#60a5fa;      /* небесно-синий */
-      --meaning:#a78bfa;   /* сиреневый */
+      --body:#2dd4bf;
+      --mind:#60a5fa;
+      --meaning:#a78bfa;
 
-      --empty:#275aaa;     /* пустой сектор дня */
-      --danger:#ef4444;
-      --ok:#22c55e;
+      --empty:#275aaa;
     }
 
     *{box-sizing:border-box}
@@ -40,8 +35,7 @@
       margin:0;
       font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);
-      background:
-        linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 35%, var(--bg3) 60%, var(--bg4) 100%);
+      background:linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 35%, var(--bg3) 60%, var(--bg4) 100%);
     }
     .wrap{max-width:900px;margin:0 auto;padding:16px 14px 120px}
 
@@ -61,7 +55,6 @@
       border:1px solid transparent;border-radius:14px;padding:8px 12px;
       color:#ffd166;font-weight:800;min-width:72px;justify-content:center
     }
-    .streak .ico{filter: drop-shadow(0 0 6px rgba(255,165,0,.35))}
     .sep{height:1px;background:linear-gradient(90deg,transparent, rgba(255,255,255,.25), transparent);margin:12px 0}
 
     /* ===== Горизонтальный календарь ===== */
@@ -86,16 +79,28 @@
     .day .dow{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
     .day .num{font-size:20px;font-weight:900;line-height:1.1;margin:4px 0 6px;color:#fff}
 
-    /* Кольцо-секторы (тонкий контур): маска показывает только обводку */
+    /* ===== Кольцо-секторы: без «пиццы», шов смещён вправо ===== */
     .ring{
       --seg1: var(--empty);
       --seg2: var(--empty);
       --seg3: var(--empty);
-      width:38px;height:38px;border-radius:999px;margin:0 auto;
-      background: conic-gradient(var(--seg1) 0 120deg, var(--seg2) 120deg 240deg, var(--seg3) 240deg 360deg);
-      border:2px solid rgba(255,255,255,.18);
+      position:relative;
+      width:38px;height:38px;margin:0 auto;border-radius:50%;
+    }
+    .ring::before{
+      content:"";
+      position:absolute; inset:0; border-radius:50%;
+      /* смещаем нулевой угол, чтобы шов был справа, а не сверху */
+      background: conic-gradient(from 90deg, var(--seg1) 0 120deg, var(--seg2) 120deg 240deg, var(--seg3) 240deg 360deg);
+      /* «бублик»: показываем только кольцо толщиной 6px */
       -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
               mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
+    }
+    .ring::after{
+      /* аккуратная рамка поверх маски, чтобы не конфликтовала с background */
+      content:"";
+      position:absolute; inset:0; border-radius:50%;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.18);
     }
 
     /* ===== Прогресс-бары сфер ===== */
@@ -128,7 +133,7 @@
         linear-gradient(45deg, #19E0FF, #7AE7FF) border-box;
       border:1px solid transparent;
       display:grid;place-items:center;cursor:pointer;transition:transform .12s ease;
-      color:#fff; font-weight:900; /* жирная i */
+      color:#fff; font-weight:900;
     }
     .icon-btn:hover{transform:translateY(-1px)}
 
@@ -155,7 +160,7 @@
     }
     .small{font-size:12px;color:var(--muted)}
 
-    /* ===== Список побед выбранного дня ===== */
+    /* ===== Список побед ===== */
     .list{margin-top:12px; display:grid; gap:8px}
     .item{
       background:linear-gradient(180deg,#0f3f87,#0c3270);
@@ -185,14 +190,13 @@
     .card{background:#0c3270;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px}
     .card .title{display:flex;align-items:center;gap:8px;font-weight:900;margin-bottom:6px}
     .modal .close{position:sticky;top:0;margin-left:auto;margin-bottom:8px}
-    /* Scrollbar */
     .days::-webkit-scrollbar{height:8px}
     .days::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:8px}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <!-- 1. Верх: приветствие + стрик -->
+    <!-- 1. Верх -->
     <div class="topbar">
       <div class="hello">
         <div class="avatar">BB</div>
@@ -204,10 +208,10 @@
     </div>
     <div class="sep"></div>
 
-    <!-- 2. Горизонтальный календарь -->
+    <!-- 2. Календарь -->
     <div id="days" class="days" aria-label="Лента дней"></div>
 
-    <!-- 3. Статус-бары сфер -->
+    <!-- 3. Прогресс-бары -->
     <div class="spheres">
       <div class="sphere" data-s="body">
         <div class="row">
@@ -232,13 +236,13 @@
       </div>
     </div>
 
-    <!-- 4. Надпись дня + info -->
+    <!-- 4. Подпись дня + info -->
     <div class="daytitle">
       <div class="label" id="dayLabel">Сегодня</div>
       <button class="icon-btn" id="infoBtn" title="Что означают сферы?"><b>i</b></button>
     </div>
 
-    <!-- 5. Блоки ввода побед -->
+    <!-- 5. Ввод побед -->
     <div class="inputs">
       <div class="input-card" data-s="body">
         <div class="hdr"><span class="dot" style="background:var(--body)"></span>Тело и энергия</div>
@@ -268,12 +272,12 @@
       </div>
     </div>
 
-    <!-- Список побед выбранного дня -->
+    <!-- Список побед -->
     <div id="list" class="list"></div>
     <div id="empty" class="empty" style="display:none">Пока нет побед за этот день — самое время начать 💪</div>
   </div>
 
-  <!-- Модалка с описанием сфер -->
+  <!-- Модалка -->
   <div class="modal" id="modal">
     <div class="sheet">
       <button class="icon-btn close" id="closeModal">✕</button>
@@ -283,7 +287,7 @@
           <div class="title"><span class="dot" style="background:var(--body)"></span>Тело и энергия</div>
           <div class="small">
             <b>Описание.</b> База жизненной силы: движение, сон, питание и восстановление.<br/>
-            <b>Эффект.</b> Больше энергии и стабильное настроение; меньше стресса; лучше форма и здоровье.<br/>
+            <b>Эффект.</б> Больше энергии и стабильное настроение; меньше стресса; лучше форма и здоровье.<br/>
             <b>Что делать.</b> 7–10 тыс. шагов/день; 150 мин кардио/нед + силовые 2×; сон 7–9 ч; белок и овощи каждый день.
           </div>
         </div>
@@ -312,7 +316,7 @@ window.addEventListener('DOMContentLoaded', () => {
   /* ===== Telegram WebApp ===== */
   const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 
-  // Берём из темы только акцент, НО НЕ цвет текста (оставляем белый)
+  // Берём из темы только акцент (текст — всегда белый)
   function applyTheme() {
     if (!tg) return;
     const p = tg.themeParams || {};
@@ -329,7 +333,7 @@ window.addEventListener('DOMContentLoaded', () => {
     av.textContent = (u?.first_name || 'BB').slice(0,2).toUpperCase();
   }
 
-  /* ===== CloudStorage wrappers ===== */
+  /* ===== CloudStorage ===== */
   function cloudSupported(){ return !!(tg && tg.CloudStorage); }
   function cloudGetItem(key){
     return new Promise((res,rej)=> tg.CloudStorage.getItem(key,(err,val)=> err?rej(err):res(val??'') ));
@@ -338,7 +342,7 @@ window.addEventListener('DOMContentLoaded', () => {
     return new Promise((res,rej)=> tg.CloudStorage.setItem(key,String(val),(err,ok)=> (err||!ok)?rej(err||new Error('setItem failed')):res() ));
   }
 
-  /* ===== Utilities ===== */
+  /* ===== Utils ===== */
   const uuid = () =>
     (crypto?.randomUUID) ? crypto.randomUUID()
       : 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
@@ -349,12 +353,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const diffDays = (a,b)=> Math.round((new Date(a)-new Date(b))/86400000);
   const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-  /* ===== State & storage ===== */
+  /* ===== State ===== */
   const KEY = 'victory-tracker-v1';
   let state = {
     items: [], // {id,text,sphere:'body'|'mind'|'meaning',date:'YYYY-MM-DD',ts:number}
-    scores: { body:0, mind:0, meaning:0 }, // 0..100
-    createdAt: null // когда начали вести учёт
+    scores: { body:0, mind:0, meaning:0 },
+    createdAt: null
   };
 
   async function loadState(){
@@ -368,44 +372,31 @@ window.addEventListener('DOMContentLoaded', () => {
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e){}
   }
 
-  /* ===== Подсчёт очков заново (детерминированно) =====
-     Правила:
-     - за день и сферу: +3 за первую победу; +1 за каждую следующую в этот же день;
-     - за день без побед в сфере (прошедший день): -5;
-     - итог не ниже 0, не выше 100;
-     - за текущий день без побед штраф НЕ начисляем.
-  */
+  /* ===== Пересчёт очков (детерминированно) ===== */
   function recomputeScores(){
     const today = todayISO();
     const allDates = state.items.map(i=>i.date);
     const minItemDate = allDates.length ? allDates.reduce((a,b)=> a<b?a:b) : today;
     const startDate = state.createdAt ? (state.createdAt < minItemDate ? state.createdAt : minItemDate) : minItemDate;
 
-    const counts = {}; // counts[iso] = {body:n, mind:n, meaning:n}
+    const counts = {};
     state.items.forEach(it=>{
       counts[it.date] = counts[it.date] || {body:0,mind:0,meaning:0};
       counts[it.date][it.sphere] = (counts[it.date][it.sphere]||0) + 1;
     });
 
     const scores = { body:0, mind:0, meaning:0 };
-
-    // Идём по дням от startDate до today
     let d = startDate;
     while (new Date(d) <= new Date(today)){
       const dayCounts = counts[d] || {body:0,mind:0,meaning:0};
       ['body','mind','meaning'].forEach(s=>{
         const c = dayCounts[s]||0;
-        if (c>0){
-          scores[s] += 3 + (c-1)*1;  // 1-я +3, остальные +1
-        } else {
-          if (d !== today) scores[s] -= 5; // штраф только за прошедшие дни
-        }
+        if (c>0){ scores[s] += 3 + (c-1)*1; } else { if (d !== today) scores[s] -= 5; }
         if (scores[s] < 0) scores[s] = 0;
         if (scores[s] > 100) scores[s] = 100;
       });
       d = addDays(d, +1);
     }
-
     state.scores = scores;
   }
 
@@ -437,7 +428,7 @@ window.addEventListener('DOMContentLoaded', () => {
     meaning: document.getElementById('btn-meaning'),
   };
 
-  /* ===== Selected day ===== */
+  /* ===== Календарь ===== */
   let selectedDate = todayISO();
 
   function labelForDay(iso){
@@ -452,7 +443,6 @@ window.addEventListener('DOMContentLoaded', () => {
     return `${dd}.${mm}.${dt.getFullYear()}`;
   }
 
-  /* ===== Calendar ===== */
   function dayHasSphere(iso, sphere){
     return state.items.some(it=> it.date===iso && it.sphere===sphere);
   }
@@ -508,7 +498,7 @@ window.addEventListener('DOMContentLoaded', () => {
     return cnt;
   }
 
-  /* ===== Bars & title ===== */
+  /* ===== Рендер прогресса/списка ===== */
   function renderBars(){
     ['body','mind','meaning'].forEach(s=>{
       const v = Math.max(0, Math.min(100, Math.round(state.scores[s]||0)));
@@ -518,7 +508,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   function renderDayTitle(){ dayLabelEl.textContent = labelForDay(selectedDate); }
 
-  /* ===== List & actions ===== */
   function sphereLabel(s){ return s==='body' ? 'Тело' : (s==='mind' ? 'Ум' : 'Смысл'); }
   function sphereColor(s){ return s==='body' ? 'var(--body)' : (s==='mind' ? 'var(--mind)' : 'var(--meaning)'); }
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -574,7 +563,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.remove('show'));
   modal.addEventListener('click', (e)=>{ if (e.target===modal) modal.classList.remove('show'); });
 
-  /* ===== Inputs binding (однократно объявленные inputs/buttons) ===== */
+  /* ===== Inputs ===== */
   function bindInput(s){
     buttons[s].addEventListener('click', async ()=>{
       const t = inputs[s].value.trim();
@@ -614,7 +603,6 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     tg.MainButton.show();
   } else {
-    // В обычном браузере показываем нейтральное приветствие
     document.getElementById('hello').textContent = 'Привет!';
   }
 
@@ -637,5 +625,3 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
-

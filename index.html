@@ -5,71 +5,75 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BeBetter · Трекер</title>
 
+  <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Прелоад hero для 1-го экрана онбординга -->
   <link rel="preload" as="image" href="assets/onb-1.avif" imagesrcset="assets/onb-1.avif 1x, assets/onb-1.webp 1x, assets/onb-1.png 1x" />
 
   <style>
-/* ========= THEME: Light paper with subtle aqua ========= */
+    /* ========= THEME: Light paper with subtle aqua ========= */
+    :root{
+      /* тёмно-синий текст на светлом фоне */
+      --ink:#0A2A6C;
+      --ink-sub:#274C9A;
 
-/* 1) Палитра */
-  :root{
-    /* тёмно-синий для текста на светлом фоне */
-    --ink:#0A2A6C;
-    --ink-sub:#274C9A;
+      /* белый фон */
+      --paper:#FFFFFF;
+      --paper-2:#F7FAFF;
 
-    /* фон */
-    --paper:#FFFFFF;
-    --paper-2:#F7FAFF;
+      /* лёгкий вспомогательный */
+      --muted:#C7E2FF;
 
-    /* светлые/мутные */
-    --muted:#6B93C2;
+      /* белый текст внутри тёмных карточек */
+      --text:#ffffff;
 
-    /* белый текст — для тёмных карточек */
-    --text:#ffffff;
+      /* тёмные карточки/плашки */
+      --card:#0b3a7a;
 
-    /* тёмные карточки остаются прежними */
-    --card:#0b3a7a;
+      --accent:#19E0FF; --accent-2:#7AE7FF;
 
-    --accent:#19E0FF; --accent-2:#7AE7FF;
-    --body:#2dd4bf; --mind:#60a5fa; --meaning:#a78bfa;
+      --body:#2dd4bf; --mind:#60a5fa; --meaning:#a78bfa;
 
-    /* пустой сегмент колечка календаря — светлый на белом фоне */
-    --empty:#d9e6ff;
+      /* пустой сегмент колечка календаря — светлый на белом фоне */
+      --empty:#d9e6ff;
 
-    --edge:#2B6FF6;
-  }
+      --edge:#2B6FF6; /* синий для обводок */
+    }
 
-  /* 2) Единый фон на всю высоту страницы (без «второго» цвета внизу) */
-  html, body{ height:auto; min-height:100%; }
-  body{
-    margin:0;
-    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-    color:var(--ink);
-    background-color:var(--paper);
-    background-image:
-      radial-gradient(1200px 800px at 12% -10%, rgba(64,156,255,.20), transparent 42%),
-      radial-gradient(900px 700px at 88% -6%, rgba(0,128,255,.12), transparent 38%),
-      linear-gradient(180deg, #FFFFFF 0%, var(--paper-2) 100%);
-    background-attachment: fixed, fixed, fixed; /* фиксируем — фон один везде */
-    background-repeat: no-repeat;
-  }
+    *{box-sizing:border-box}
+    html,body{min-height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink);
+      /* единый «бумажный» фон с лёгкими голубыми пятнами */
+      background-color:var(--paper);
+      background-image:
+        radial-gradient(1200px 800px at 12% -10%, rgba(64,156,255,.20), transparent 42%),
+        radial-gradient(900px 700px at 88% -6%, rgba(0,128,255,.12), transparent 38%),
+        linear-gradient(180deg, #FFFFFF 0%, var(--paper-2) 100%);
+      background-attachment: fixed, fixed, fixed;
+      background-repeat: no-repeat;
+    }
+    .wrap{max-width:900px;margin:0 auto;padding:16px 14px 120px}
 
-  /* 3) Приветствие и заголовок дня — тёмно-синие */
-  .hello{ color:var(--ink); }           /* «Привет, Имя!» */
-  .daytitle .label{ color:var(--ink); } /* «Сегодня/Вчера/Завтра» */
-
-  /* 4) Календарное кольцо: светлый «пустой» контур на белом фоне */
-  .ring{ --seg1: var(--empty); --seg2: var(--empty); --seg3: var(--empty); }
-  /* (активные сегменты устанавливаются инлайном в JS, как и раньше) */
-
-  /* 5) Белый текст внутри тёмных блоков (карточки/списки/формы) */
-  .sphere, .input-card, .item, .card, .sheet{ color:#fff; }
-  .item .small{ color:#C7E2FF; } /* подпись с датой в списке — нежно-голубая */
-
-  /* 6) Прочие элементы, у которых раньше текст был явно белым — оставить */
-  .pct{ color:#fff; }            /* 3/100 на барах */
-  .icon-btn{ color:#fff; }       /* кнопка i */
-  input::placeholder{ color:#9CCAFF; }
+    /* ===== Верхняя панель ===== */
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .hello{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;color:var(--ink)}
+    .hello .avatar{
+      width:34px;height:34px;border-radius:999px;
+      background:linear-gradient(135deg,#1b4f9e,#0f3c81);display:grid;place-items:center;
+      font-weight:800;color:#E7F3FF
+    }
+    .streak{
+      display:flex;align-items:center;gap:8px;
+      background:linear-gradient(#0f3f87,#0c3270);
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:14px;padding:8px 12px;
+      color:#ffd166;font-weight:800;min-width:72px;justify-content:center
+    }
+    .sep{height:1px;background:linear-gradient(90deg,transparent, rgba(0,40,120,.25), transparent);margin:12px 0}
 
     /* ===== Горизонтальный календарь ===== */
     .days{
@@ -113,12 +117,12 @@
       box-shadow: inset 0 0 0 2px rgba(255,255,255,.18);
     }
 
-    /* ===== Прогресс-бары сфер ===== */
+    /* ===== Прогресс-бары сфер (тёмные карточки, белый текст) ===== */
     .spheres{display:grid;grid-template-columns:1fr;gap:12px;margin:12px 0 10px}
     @media (min-width:740px){ .spheres{grid-template-columns:1fr 1fr 1fr} }
     .sphere{
       background:linear-gradient(180deg,#0f3f87,#0c3270);
-      border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px
+      border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px;color:#fff
     }
     .sphere .row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
     .tag{display:inline-flex;align-items:center;gap:8px;font-weight:800}
@@ -135,7 +139,7 @@
 
     /* ===== Подпись дня + info ===== */
     .daytitle{display:flex;align-items:center;justify-content:space-between;margin:6px 0 6px}
-    .daytitle .label{font-weight:900;font-size:18px;color:#fff}
+    .daytitle .label{font-weight:900;font-size:18px;color:var(--ink)}
     .icon-btn{
       width:36px;height:36px;border-radius:999px;
       background:linear-gradient(#0f3f87,#0c3270);
@@ -145,21 +149,21 @@
     }
     .icon-btn:hover{transform:translateY(-1px)}
 
-    /* ===== Ввод побед ===== */
+    /* ===== Ввод побед (тёмные карточки, белый текст) ===== */
     .inputs{display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px}
     @media (min-width:740px){ .inputs{grid-template-columns:1fr 1fr 1fr} }
     .input-card{
       background:linear-gradient(180deg,#0f3f87,#0c3270);
-      border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px
+      border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px;color:#fff
     }
-    .input-card .hdr{display:flex;align-items:center;gap:8px;font-weight:800;color:#fff}
+    .input-card .hdr{display:flex;align-items:center;gap:8px;font-weight:800}
     .input{display:flex;gap:8px;align-items:center}
     input[type="text"]{
       flex:1;padding:12px 12px;border-radius:12px;border:1px solid #1A5ED1;background:#08356E;color:#fff;outline:none;font-size:14px
     }
     input::placeholder{color:#9CCAFF}
 
-    /* Кнопка-галочка: вернули прежний фон; внутри — картинка */
+    /* Кнопка-галочка: прежний фон; внутри — картинка */
     .submit{
       width:44px;height:44px;border-radius:12px;
       background:linear-gradient(#0f3f87,#0c3270);
@@ -169,14 +173,14 @@
     }
     .submit img.check{ width:22px; height:22px; display:block; }
 
-    .small{font-size:12px;color:var(--muted)}
+    .small{font-size:12px;color:#C7E2FF}
 
-    /* ===== Список побед ===== */
+    /* ===== Список побед (архивные записи: белый текст) ===== */
     .list{margin-top:12px; display:grid; gap:8px}
     .item{
       background:linear-gradient(180deg,#0f3f87,#0c3270);
       border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px
+      display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff
     }
     .item .left{display:flex;align-items:flex-start;gap:8px}
     .pill{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff}
@@ -197,7 +201,7 @@
     .sheet h3{margin:6px 0 12px}
     .grid{display:grid;gap:10px}
     @media (min-width:740px){ .grid{grid-template-columns:1fr 1fr 1fr} }
-    .card{background:#0c3270;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px}
+    .card{background:#0c3270;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px;color:#fff}
     .card .title{display:flex;align-items:center;gap:8px;font-weight:900;margin-bottom:6px}
     .card .small .lbl{font-weight:900}
     .modal .close{position:sticky;top:0;margin-left:auto;margin-bottom:8px}
@@ -210,10 +214,13 @@
     .days::-webkit-scrollbar{height:8px}
     .days::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:8px}
 
-    /* ===== Онбординг ===== */
-    .onb{ position:fixed; inset:0; z-index:50; display:none;
+    /* ===== Онбординг (full-screen overlay) ===== */
+    .onb{
+      position:fixed; inset:0; z-index:50; display:none;
       background:linear-gradient(180deg,rgba(8,24,64,.85), rgba(8,24,64,.95));
-      backdrop-filter: blur(6px); color:#fff; }
+      backdrop-filter: blur(6px);
+      color:#fff;
+    }
     .onb.show{ display:flex; align-items:center; justify-content:center; padding:18px; }
     .onb-card{
       width:min(860px,96vw); height:min(92vh,860px);
@@ -226,22 +233,30 @@
     .dot{ width:8px; height:8px; border-radius:999px; background:rgba(255,255,255,.35); }
     .dot.active{ background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.18) }
     .onb-skip{ background:none; border:0; color:#fff; font-weight:800; cursor:pointer; opacity:.9 }
-    .onb-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; overflow:auto; padding:12px 18px 0; width:100% }
-    .onb-hero{ display:flex; align-items:center; justify-content:center; width:100%; height:34%; min-height:160px; }
-    .onb-hero.sm{ height:28%; min-height:120px; }
-    .hero-picture{ display:block; width:min(65%, 420px); margin:0 auto; } /* дефолт — норм для экрана 4 */
-    .hero-picture.sm{ width:min(46%, 300px); } /* уменьшенные для экранов 2 и 3 */
+
+    .onb-body{
+      flex:1; display:flex; flex-direction:column; align-items:center;
+      overflow:auto; padding:6px 18px 0; width:100%;
+    }
+    .onb-hero{
+      display:flex; align-items:center; justify-content:center; width:100%;
+      padding:12px 0 10px; margin:4px 0 8px;
+    }
+    .onb-hero.sm{ padding:10px 0 8px; margin:2px 0 8px; }
+
+    /* Размеры иллюстраций */
+    .hero-picture{ display:block; width:min(58%, 360px); max-width:360px; margin:0 auto; }
+    .hero-picture.sm{ width:min(42%, 280px); max-width:280px; } /* меньше для экранов 2–3 */
     .hero-img{ display:block; width:100%; height:auto; object-fit:contain; contain:content; }
     @media (max-width:380px){
-      .hero-picture{ width:min(68%, 340px); } 
-      .hero-picture.sm{ width:min(58%, 260px); }
-      .onb-hero{ height:30%; min-height:140px; }
-      .onb-hero.sm{ height:26%; min-height:110px; }
+      .hero-picture{ width:min(64%, 300px); max-width:300px; }
+      .hero-picture.sm{ width:min(54%, 240px); max-width:240px; }
     }
-    .onb-h1{ font-size:24px; font-weight:900; margin:8px 0 6px; text-align:center }
+
+    .onb-h1{ font-size:24px; font-weight:900; margin:6px 0 6px; text-align:center }
     .onb-p{ font-size:14px; color:#E6F2FF; text-align:center; max-width:720px; margin:0 auto 8px }
-    .onb-list{ display:grid; gap:6px; max-width:760px; margin:8px auto 8px; padding:0 8px; font-size:14px }
-    .onb-list b{ font-weight:900 } /* «Что это», «Зачем нужно», «Что будешь фиксировать» */
+    .onb-list{ display:grid; gap:6px; max-width:760px; margin:8px auto 8px; padding:0 8px; font-size:14px; line-height:1.45 }
+    .onb-list b{ font-weight:900 }
     .onb-hint{ color:#C7E2FF; opacity:.9; font-size:12px; text-align:center; margin-top:4px }
     .onb-cta{ padding:12px 16px; display:grid; gap:8px }
     .btn-primary{
@@ -499,7 +514,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function labelForDay(iso){
     const t = todayISO();
-    const d = diffDays(iso,t);
+       const d = diffDays(iso,t);
     if (d===0) return 'Сегодня';
     if (d===-1) return 'Вчера';
     if (d===+1) return 'Завтра';
@@ -664,7 +679,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const onbSkip = document.getElementById('onbSkip');
   const onbCard = document.getElementById('onbCard');
 
-  // helper: picture HTML (AVIF → WebP → PNG) с кастом-классом размера
+  // helper: picture HTML (AVIF → WebP → PNG) с классом размера
   function heroPicture(base, alt, eager=false, sizeClass=''){
     const loading = eager ? 'eager' : 'lazy';
     return `
@@ -770,7 +785,9 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     const listHtml = slide.items.map(x=> `<div>${x}</div>`).join('');
     onbBody.innerHTML = `
-      <div class="onb-hero">${heroPicture(slide.base,'Онбординг — иллюстрация',false,'${sizeClass}')}</div>
+      <div class="onb-hero ${sizeClass}">
+        ${heroPicture(slide.base,'Онбординг — иллюстрация', false, sizeClass)}
+      </div>
       <div class="onb-h1">${slide.h1}</div>
       <div class="onb-list">${listHtml}</div>
       <div class="onb-hint">${slide.hint}</div>
@@ -845,4 +862,5 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 

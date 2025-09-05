@@ -5,28 +5,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BeBetter · Трекер</title>
 
-  <!-- Официальный скрипт Telegram WebApp -->
+  <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Прелоад hero для 1-го экрана онбординга (самый видимый) -->
+  <link rel="preload" as="image" href="assets/onb-1.avif" imagesrcset="assets/onb-1.avif 1x, assets/onb-1.webp 1x, assets/onb-1.png 1x" />
 
   <style>
     :root{
       --text:#ffffff;
       --muted:#C7E2FF;
 
-      --bg1:#0F5CC0;
-      --bg2:#0049A8;
-      --bg3:#003C99;
-      --bg4:#003080;
-
+      --bg1:#0F5CC0; --bg2:#0049A8; --bg3:#003C99; --bg4:#003080;
       --card:#0b3a7a;
-      --accent:#19E0FF;
-      --accent-2:#7AE7FF;
 
-      --body:#2dd4bf;
-      --mind:#60a5fa;
-      --meaning:#a78bfa;
+      --accent:#19E0FF; --accent-2:#7AE7FF;
 
+      --body:#2dd4bf; --mind:#60a5fa; --meaning:#a78bfa;
       --empty:#275aaa;
+
+      /* новый приятный синий для обводок кнопок */
+      --edge:#2B6FF6;
     }
 
     *{box-sizing:border-box}
@@ -49,10 +48,9 @@
     }
     .streak{
       display:flex;align-items:center;gap:8px;
-      background:
-        linear-gradient(#0f3f87,#0c3270) padding-box,
-        linear-gradient(45deg,#ffd166,#ff9f1c) border-box;
-      border:1px solid transparent;border-radius:14px;padding:8px 12px;
+      background:linear-gradient(#0f3f87,#0c3270);
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:14px;padding:8px 12px;
       color:#ffd166;font-weight:800;min-width:72px;justify-content:center
     }
     .sep{height:1px;background:linear-gradient(90deg,transparent, rgba(255,255,255,.25), transparent);margin:12px 0}
@@ -78,7 +76,7 @@
     .day .dow{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
     .day .num{font-size:20px;font-weight:900;line-height:1.1;margin:4px 0 6px;color:#fff}
 
-    /* ===== Кольцо-секторы (чистый контур) ===== */
+    /* ===== Кольцо-секторы (аккуратный контур) ===== */
     .ring{
       --seg1: var(--empty);
       --seg2: var(--empty);
@@ -124,10 +122,8 @@
     .daytitle .label{font-weight:900;font-size:18px;color:#fff}
     .icon-btn{
       width:36px;height:36px;border-radius:999px;
-      background:
-        linear-gradient(#0f3f87,#0c3270) padding-box,
-        linear-gradient(45deg, #19E0FF, #7AE7FF) border-box;
-      border:1px solid transparent;
+      background:linear-gradient(#0f3f87,#0c3270);
+      border:1px solid var(--edge);
       display:grid;place-items:center;cursor:pointer;transition:transform .12s ease;
       color:#fff; font-weight:900;
     }
@@ -135,7 +131,7 @@
 
     /* ===== Ввод побед ===== */
     .inputs{display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px}
-    @media (min-width:740px){ .inputs{grid-template-columns:1fr 1fr 1р} }
+    @media (min-width:740px){ .inputs{grid-template-columns:1fr 1fr 1fr} }
     .input-card{
       background:linear-gradient(180deg,#0f3f87,#0c3270);
       border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px
@@ -146,14 +142,16 @@
       flex:1;padding:12px 12px;border-radius:12px;border:1px solid #1A5ED1;background:#08356E;color:#fff;outline:none;font-size:14px
     }
     input::placeholder{color:#9CCAFF}
+
+    /* Кнопка-галочка: белая и с новой синей обводкой */
     .submit{
       width:44px;height:44px;border-radius:12px;
-      background:
-        linear-gradient(#0f3f87,#0c3270) padding-box,
-        linear-gradient(45deg, #19E0FF, #7AE7FF) border-box;
-      border:1px solid transparent;
-      display:grid;place-items:center;cursor:pointer;font-size:18px;color:#fff;font-weight:800
+      background:linear-gradient(#0f3f87,#0c3270);
+      border:1px solid var(--edge);
+      display:grid;place-items:center;cursor:pointer;font-size:18px;color:#fff;font-weight:900;
+      text-shadow:0 0 0 rgba(0,0,0,0); /* чтобы белый выглядел чисто */
     }
+
     .small{font-size:12px;color:var(--muted)}
 
     /* ===== Список побед ===== */
@@ -168,10 +166,9 @@
     .actions{display:flex;gap:6px}
     .btn{
       height:32px;min-width:32px;border-radius:10px;
-      background:
-        linear-gradient(#0f3f87,#0c3270) padding-box,
-        linear-gradient(45deg, #19E0FF, #7AE7FF) border-box;
-      border:1px solid transparent;display:grid;place-items:center;cursor:pointer;color:#fff;font-weight:800
+      background:linear-gradient(#0f3f87,#0c3270);
+      border:1px solid var(--edge);
+      display:grid;place-items:center;cursor:pointer;color:#fff;font-weight:800
     }
 
     /* ===== Модалка ===== */
@@ -189,10 +186,7 @@
 
     .onb-open-wrap{display:flex;justify-content:flex-end;margin-top:10px}
     .btn-mini{height:40px;border-radius:12px;font-weight:900;cursor:pointer;color:#00275f;
-      background:
-        linear-gradient(#7AE7FF,#19E0FF) padding-box,
-        linear-gradient(45deg, #7AE7FF, #19E0FF) border-box;
-      border:1px solid transparent; padding:0 14px;
+      background:linear-gradient(#7AE7FF,#19E0FF); border:1px solid var(--edge); padding:0 14px;
     }
 
     .days::-webkit-scrollbar{height:8px}
@@ -217,20 +211,19 @@
     .dot{ width:8px; height:8px; border-radius:999px; background:rgba(255,255,255,.35); }
     .dot.active{ background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.18) }
     .onb-skip{ background:none; border:0; color:#fff; font-weight:800; cursor:pointer; opacity:.9 }
-    .onb-body{ flex:1; display:flex; flex-direction:column; align-items:center; overflow:auto; padding:12px 18px 0 }
-    .onb-hero{ display:grid; place-items:center; height:40%; min-height:180px; }
-    .onb-hero img{ max-height:100%; max-width:80%; object-fit:contain }
-    .onb-h1{ font-size:24px; font-weight:900; margin:4px 0 6px; text-align:center }
+    .onb-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; overflow:auto; padding:12px 18px 0; width:100% }
+    .onb-hero{ display:flex; align-items:center; justify-content:center; width:100%; height:40%; min-height:200px; }
+    /* фикс позиции и размеров картинки */
+    .hero-picture{ display:block; width:min(80%,520px); margin:0 auto; }
+    .hero-img{ display:block; width:100%; height:auto; object-fit:contain; contain:content; }
+    .onb-h1{ font-size:24px; font-weight:900; margin:8px 0 6px; text-align:center }
     .onb-p{ font-size:14px; color:#E6F2FF; text-align:center; max-width:720px; margin:0 auto 8px }
     .onb-list{ display:grid; gap:6px; max-width:760px; margin:8px auto 8px; padding:0 8px; font-size:14px }
     .onb-hint{ color:#C7E2FF; opacity:.9; font-size:12px; text-align:center; margin-top:4px }
     .onb-cta{ padding:12px 16px; display:grid; gap:8px }
     .btn-primary{
       height:48px; border-radius:14px; font-weight:900; cursor:pointer; color:#00275f;
-      background:
-        linear-gradient(#7AE7FF,#19E0FF) padding-box,
-        linear-gradient(45deg, #7AE7FF, #19E0FF) border-box;
-      border:1px solid transparent;
+      background:linear-gradient(#7AE7FF,#19E0FF); border:1px solid var(--edge);
     }
     .btn-ghost{
       height:44px; border-radius:14px; font-weight:800; cursor:pointer; color:#fff;
@@ -375,7 +368,6 @@
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  /* ===== Telegram WebApp ===== */
   const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 
   function applyTheme() {
@@ -385,7 +377,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (p.button_color) css.setProperty('--accent', '#' + p.button_color);
     if (p.button_color) css.setProperty('--accent-2', '#' + p.button_color);
   }
-
   function setHello() {
     const u = tg?.initDataUnsafe?.user;
     const name = u?.first_name ? u.first_name : 'друг';
@@ -394,46 +385,36 @@ window.addEventListener('DOMContentLoaded', () => {
     av.textContent = (u?.first_name || 'BB').slice(0,2).toUpperCase();
   }
 
-  /* ===== CloudStorage ===== */
+  /* CloudStorage */
   function cloudSupported(){ return !!(tg && tg.CloudStorage); }
-  function cloudGetItem(key){
-    return new Promise((res,rej)=> tg.CloudStorage.getItem(key,(err,val)=> err?rej(err):res(val??'') ));
-  }
-  function cloudSetItem(key,val){
-    return new Promise((res,rej)=> tg.CloudStorage.setItem(key,String(val),(err,ok)=> (err||!ok)?rej(err||new Error('setItem failed')):res() ));
-  }
+  function cloudGetItem(key){ return new Promise((res,rej)=> tg.CloudStorage.getItem(key,(e,v)=> e?rej(e):res(v??''))); }
+  function cloudSetItem(key,val){ return new Promise((res,rej)=> tg.CloudStorage.setItem(key,String(val),(e,ok)=> (e||!ok)?rej(e||new Error('setItem failed')):res())); }
 
-  /* ===== Utils ===== */
-  const uuid = () =>
-    (crypto?.randomUUID) ? crypto.randomUUID()
-      : 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
-
+  /* Utils */
+  const uuid = () => (crypto?.randomUUID) ? crypto.randomUUID() : 'id-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
   const fmtISO = (d)=> new Date(d).toISOString().slice(0,10);
   const todayISO = ()=> fmtISO(new Date());
-  const addDays = (iso,dx)=> fmtISO(new Date(new Date(iso).getDate? new Date(iso).setDate(new Date(iso).getDate()+dx): new Date(iso).setDate(new Date(iso).getDate()+dx)));
+  const addDays = (iso,dx)=> {
+    const dt = new Date(iso);
+    dt.setDate(dt.getDate()+dx);
+    return fmtISO(dt);
+  };
   const diffDays = (a,b)=> Math.round((new Date(a)-new Date(b))/86400000);
   const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-  /* ===== App State ===== */
+  /* State */
   const KEY = 'victory-tracker-v1';
-  let state = {
-    items: [],
-    scores: { body:0, mind:0, meaning:0 },
-    createdAt: null
-  };
+  let state = { items: [], scores:{body:0,mind:0,meaning:0}, createdAt:null };
 
   async function loadState(){
-    if (cloudSupported()){
-      try { const raw = await cloudGetItem(KEY); if (raw) return JSON.parse(raw); } catch(e){}
-    }
-    try { return JSON.parse(localStorage.getItem(KEY)) || state; } catch { return state; }
+    if (cloudSupported()){ try{ const raw = await cloudGetItem(KEY); if (raw) return JSON.parse(raw); }catch{} }
+    try{ return JSON.parse(localStorage.getItem(KEY)) || state; }catch{ return state; }
   }
   async function saveState(s){
-    if (cloudSupported()){ try { await cloudSetItem(KEY, JSON.stringify(s)); } catch(e){} }
-    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e){}
+    if (cloudSupported()){ try{ await cloudSetItem(KEY, JSON.stringify(s)); }catch{} }
+    try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch{}
   }
 
-  /* ===== Scores recompute ===== */
   function recomputeScores(){
     const today = todayISO();
     const allDates = state.items.map(i=>i.date);
@@ -461,7 +442,7 @@ window.addEventListener('DOMContentLoaded', () => {
     state.scores = scores;
   }
 
-  /* ===== UI refs ===== */
+  /* UI refs */
   const daysEl = document.getElementById('days');
   const listEl = document.getElementById('list');
   const emptyEl = document.getElementById('empty');
@@ -489,7 +470,7 @@ window.addEventListener('DOMContentLoaded', () => {
     meaning: document.getElementById('btn-meaning'),
   };
 
-  /* ===== Calendar ===== */
+  /* Calendar */
   let selectedDate = todayISO();
 
   function labelForDay(iso){
@@ -503,11 +484,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const mm = String(dt.getMonth()+1).padStart(2,'0');
     return `${dd}.${mm}.${dt.getFullYear()}`;
   }
-
   function dayHasSphere(iso, sphere){
     return state.items.some(it=> it.date===iso && it.sphere===sphere);
   }
-
   function renderDays(){
     daysEl.innerHTML = '';
     const start = addDays(todayISO(), -21);
@@ -549,7 +528,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (sel) sel.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
   }
 
-  /* ===== Streak ===== */
   function calcStreak(){
     const days = new Set(state.items.map(i=> i.date));
     let d = todayISO();
@@ -559,7 +537,6 @@ window.addEventListener('DOMContentLoaded', () => {
     return cnt;
   }
 
-  /* ===== Render helpers ===== */
   function renderBars(){
     ['body','mind','meaning'].forEach(s=>{
       const v = Math.max(0, Math.min(100, Math.round(state.scores[s]||0)));
@@ -568,7 +545,6 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
   function renderDayTitle(){ dayLabelEl.textContent = labelForDay(selectedDate); }
-
   function sphereLabel(s){ return s==='body' ? 'Тело' : (s==='mind' ? 'Ум' : 'Смысл'); }
   function sphereColor(s){ return s==='body' ? 'var(--body)' : (s==='mind' ? 'var(--mind)' : 'var(--meaning)'); }
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -618,19 +594,17 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ===== Info modal ===== */
+  /* Info modal */
   const modal = document.getElementById('modal');
   document.getElementById('infoBtn').addEventListener('click', ()=> modal.classList.add('show'));
   document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.remove('show'));
   modal.addEventListener('click', (e)=>{ if (e.target===modal) modal.classList.remove('show'); });
-
-  // Кнопка «Краткий онбординг» (экраны 2–4)
   document.getElementById('reopenOnb').addEventListener('click', ()=>{
     modal.classList.remove('show');
-    showOnboarding(2); // старт с экрана 2
+    showOnboarding(2);
   });
 
-  /* ===== Inputs ===== */
+  /* Inputs */
   function bindInput(s){
     buttons[s].addEventListener('click', async ()=>{
       const t = inputs[s].value.trim();
@@ -652,23 +626,11 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   ['body','mind','meaning'].forEach(bindInput);
 
-  /* ===== Telegram MainButton ===== */
+  /* Telegram setup — убираем нижнюю MainButton */
   if (tg){
     tg.ready(); tg.expand(); applyTheme(); setHello();
     tg.onEvent('themeChanged', applyTheme);
-    tg.MainButton.setParams({ text: 'Добавить победу' });
-    tg.MainButton.onClick(async ()=>{
-      for (const s of ['body','mind','meaning']){
-        const t = inputs[s].value.trim();
-        if (t){
-          state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
-          inputs[s].value='';
-          await doSaveAndRerender();
-          break;
-        }
-      }
-    });
-    tg.MainButton.show();
+    try { tg.MainButton.hide(); tg.MainButton.offClick?.(); } catch(e){}
   } else {
     document.getElementById('hello').textContent = 'Привет!';
   }
@@ -682,15 +644,27 @@ window.addEventListener('DOMContentLoaded', () => {
   const onbSkip = document.getElementById('onbSkip');
   const onbCard = document.getElementById('onbCard');
 
+  // helper: picture HTML (AVIF → WebP → PNG)
+  function heroPicture(base, alt, eager=false){
+    const loading = eager ? 'eager' : 'lazy';
+    return `
+      <picture class="hero-picture">
+        <source type="image/avif" srcset="${base}.avif">
+        <source type="image/webp" srcset="${base}.webp">
+        <img class="hero-img" src="${base}.png" alt="${alt}" loading="${loading}" decoding="async" width="800" height="600"/>
+      </picture>
+    `;
+  }
+
   const slides = [
     {
       id: 1, dots: 0, skip: false,
-      img: 'assets/onb-1.png',
+      base: 'assets/onb-1',
       h1: 'Привет! Это трекер самопрокачки',
       p:  'Помогаем расти в трёх сферах — Тело, Ум и Смысл. Отмечай маленькие победы и смотри, как складывается большой прогресс.',
       renderBody(){
         onbBody.innerHTML = `
-          <div class="onb-hero"><img src="${this.img}" alt="Онбординг — приветствие" /></div>
+          <div class="onb-hero">${heroPicture(this.base,'Онбординг — приветствие',true)}</div>
           <div class="onb-h1">${this.h1}</div>
           <div class="onb-p">${this.p}</div>
         `;
@@ -704,7 +678,7 @@ window.addEventListener('DOMContentLoaded', () => {
     },
     {
       id: 2, dots: 1, skip: true,
-      img: 'assets/onb-2-body.png',
+      base: 'assets/onb-2-body',
       h1: 'Тело и энергия',
       items: [
         '<b>Что это.</b> База жизненной силы: движение, сон, питание и восстановление.',
@@ -720,7 +694,7 @@ window.addEventListener('DOMContentLoaded', () => {
     },
     {
       id: 3, dots: 2, skip: true,
-      img: 'assets/onb-3-mind.png',
+      base: 'assets/onb-3-mind',
       h1: 'Ум и фокус',
       items: [
         '<b>Что это.</b> Навыки внимания и мышления: как выбираешь фокус, говоришь с собой, учишься и принимаешь решения.',
@@ -735,7 +709,7 @@ window.addEventListener('DOMContentLoaded', () => {
     },
     {
       id: 4, dots: 3, skip: true,
-      img: 'assets/onb-4-meaning.png',
+      base: 'assets/onb-4-meaning',
       h1: 'Смысл и присутствие',
       items: [
         '<b>Что это.</b> Внутренняя опора на ценности: умение быть в моменте, принимать переживания и чувствовать связь с важным.',
@@ -755,11 +729,11 @@ window.addEventListener('DOMContentLoaded', () => {
     onbDots.innerHTML = '';
     if (slides[idx-1].dots === 0){ onbDots.style.visibility='hidden'; return; }
     onbDots.style.visibility='visible';
-    const total = 3; // для экранов 2–4
+    const total = 3;
     for (let i=1;i<=total;i++){
       const d = document.createElement('div');
       d.className = 'dot' + (i===slides[idx-1].dots ? ' active' : '');
-      d.addEventListener('click', ()=> go(i+1)); // i=1->2, i=2->3, i=3->4
+      d.addEventListener('click', ()=> go(i+1));
       onbDots.appendChild(d);
     }
   }
@@ -769,24 +743,20 @@ window.addEventListener('DOMContentLoaded', () => {
     renderDots(idx);
     onbSkip.style.display = slide.skip ? 'inline' : 'none';
     if (idx === 1){
-      slide.renderBody();
-      return;
+      slide.renderBody(); return;
     }
-    // generic body for 2–4
     const listHtml = slide.items.map(x=> `<div>${x}</div>`).join('');
     onbBody.innerHTML = `
-      <div class="onb-hero"><img src="${slide.img}" alt="Онбординг — иллюстрация" /></div>
+      <div class="onb-hero">${heroPicture(slide.base,'Онбординг — иллюстрация')}</div>
       <div class="onb-h1">${slide.h1}</div>
       <div class="onb-list">${listHtml}</div>
       <div class="onb-hint">${slide.hint}</div>
     `;
     onbCta.innerHTML = `<button class="btn-primary" id="onbNext">${slide.cta}</button>`;
-    document.getElementById('onbNext').onclick = ()=> {
-      if (idx<slides.length) go(idx+1); else finishOnboarding();
-    };
+    document.getElementById('onbNext').onclick = ()=> { if (idx<slides.length) go(idx+1); else finishOnboarding(); };
   }
 
-  // swipe support
+  // swipe
   let sx=null;
   onbCard.addEventListener('pointerdown', e=>{ sx = e.clientX; });
   onbCard.addEventListener('pointerup', e=>{
@@ -795,7 +765,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const TH = 60;
     if (Math.abs(dx) < TH) return;
     if (dx<0 && curSlide<4) go(curSlide+1);
-    if (dx>0 && curSlide>2) go(curSlide-1); // не даём уйти на экран 1
+    if (dx>0 && curSlide>2) go(curSlide-1);
   });
 
   onbSkip.addEventListener('click', finishOnboarding);
@@ -807,15 +777,13 @@ window.addEventListener('DOMContentLoaded', () => {
     try{ return localStorage.getItem(ONB_KEY)==='true'; }catch{ return false; }
   }
   async function setOnbDone(){
-    if (cloudSupported()){
-      try{ await cloudSetItem(ONB_KEY,'true'); }catch{}
-    }
+    if (cloudSupported()){ try{ await cloudSetItem(ONB_KEY,'true'); }catch{} }
     try{ localStorage.setItem(ONB_KEY,'true'); }catch{}
   }
 
   function showOnboarding(startAt=1){
     onbEl.classList.add('show');
-    go(startAt); // 1 — полноценно; 2 — краткий (без первого)
+    go(startAt);
   }
   async function finishOnboarding(){
     await setOnbDone();
@@ -824,19 +792,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
   let curSlide = 1;
   function go(n){
-    // если по кнопке открыли с 2-го — не даём уйти на 1-й никакими путями
-    if (n < 2 && curSlide >= 2) n = 2;
+    if (n < 2 && curSlide >= 2) n = 2; // не даём вернуться на 1-й при «кратком»
     curSlide = n;
     renderSlide(n);
   }
 
-  // прелоад картинок
-  ['assets/onb-1.png','assets/onb-2-body.png','assets/onb-3-mind.png','assets/onb-4-meaning.png']
+  // прелоад прочих изображений
+  ['assets/onb-2-body.avif','assets/onb-3-mind.avif','assets/onb-4-meaning.avif']
     .forEach(src=>{ const im = new Image(); im.src = src; });
 
-  /* ===== Init ===== */
+  /* Init */
   (async ()=>{
-    // App data
     state = await loadState();
     if (!state.createdAt){ state.createdAt = todayISO(); }
     if (!state.scores){ state.scores = {body:0,mind:0,meaning:0}; }
@@ -844,13 +810,13 @@ window.addEventListener('DOMContentLoaded', () => {
     recomputeScores();
     await saveState(state);
 
-    renderBars();
-    renderDayTitle();
-    renderDays();
-    renderList();
+    renderBars(); renderDayTitle(); renderDays(); renderList();
     streakEl.textContent = calcStreak();
 
-    // Onboarding check (авто — с экрана 1 только при первом запуске)
+    // Прячем MainButton Телеги на всякий случай
+    try{ tg?.MainButton?.hide(); }catch{}
+
+    // Покажем онбординг только при самом первом запуске
     const done = await getOnbDone();
     if (!done){ showOnboarding(1); }
   })();

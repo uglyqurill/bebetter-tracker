@@ -144,13 +144,21 @@
     input::placeholder{color:#9CCAFF}
 
     /* Кнопка-галочка: белая и с новой синей обводкой */
+    /* Кнопка-галочка: светло-серый фон, белая галка */
     .submit{
       width:44px;height:44px;border-radius:12px;
-      background:linear-gradient(#0f3f87,#0c3270);
+      background:#E6EDF9;                 /* светло-серый фон по умолчанию */
       border:1px solid var(--edge);
-      display:grid;place-items:center;cursor:pointer;font-size:18px;color:#fff;font-weight:900;
-      text-shadow:0 0 0 rgba(0,0,0,0); /* чтобы белый выглядел чисто */
+      display:grid;place-items:center;cursor:pointer;
+      font-size:18px;color:#fff;font-weight:900;   /* галка белая */
+      transition: background-color .2s ease;
     }
+
+    /* Вспышка (на 2 сек) цветом сферы */
+    .submit.flash.s-body{   background: var(--body);   }
+    .submit.flash.s-mind{   background: var(--mind);   }
+    .submit.flash.s-meaning{background: var(--meaning);}
+
 
     .small{font-size:12px;color:var(--muted)}
 
@@ -212,9 +220,9 @@
     .dot.active{ background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.18) }
     .onb-skip{ background:none; border:0; color:#fff; font-weight:800; cursor:pointer; opacity:.9 }
     .onb-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; overflow:auto; padding:12px 18px 0; width:100% }
-    .onb-hero{ display:flex; align-items:center; justify-content:center; width:100%; height:40%; min-height:200px; }
+    .onb-hero{ height:34%; min-height:160px; }
     /* фикс позиции и размеров картинки */
-    .hero-picture{ display:block; width:min(80%,520px); margin:0 auto; }
+    .hero-picture{ display:block; width:min(65%, 420px); margin:0 auto; }
     .hero-img{ display:block; width:100%; height:auto; object-fit:contain; contain:content; }
     .onb-h1{ font-size:24px; font-weight:900; margin:8px 0 6px; text-align:center }
     .onb-p{ font-size:14px; color:#E6F2FF; text-align:center; max-width:720px; margin:0 auto 8px }
@@ -385,6 +393,8 @@ window.addEventListener('DOMContentLoaded', () => {
     av.textContent = (u?.first_name || 'BB').slice(0,2).toUpperCase();
   }
 
+  
+
   /* CloudStorage */
   function cloudSupported(){ return !!(tg && tg.CloudStorage); }
   function cloudGetItem(key){ return new Promise((res,rej)=> tg.CloudStorage.getItem(key,(e,v)=> e?rej(e):res(v??''))); }
@@ -537,6 +547,13 @@ window.addEventListener('DOMContentLoaded', () => {
     return cnt;
   }
 
+  function flashSubmit(s){
+    const btn = buttons[s];
+    btn.classList.add('flash', `s-${s}`);
+    setTimeout(()=> btn.classList.remove('flash', `s-${s}`), 2000);
+  }
+
+
   function renderBars(){
     ['body','mind','meaning'].forEach(s=>{
       const v = Math.max(0, Math.min(100, Math.round(state.scores[s]||0)));
@@ -611,8 +628,10 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!t) return;
       state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
       inputs[s].value='';
+      flashSubmit(s);                       // вот это добавь
       await doSaveAndRerender();
     });
+
     inputs[s].addEventListener('keydown', async (e)=>{
       if (e.key==='Enter'){
         e.preventDefault();
@@ -620,9 +639,11 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!t) return;
         state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
         inputs[s].value='';
+        flashSubmit(s);                     // и здесь тоже
         await doSaveAndRerender();
       }
     });
+
   }
   ['body','mind','meaning'].forEach(bindInput);
 

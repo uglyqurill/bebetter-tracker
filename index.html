@@ -13,28 +13,51 @@
 
   <style>
     :root{
-      --text:#ffffff;
-      --muted:#C7E2FF;
+      /* Текст/фон */
+      --text:#0D233B;           /* основной тёмный */
+      --text-muted:#516B8F;     /* подтекст */
+      --muted:#6D87A9;
 
-      --bg1:#0F5CC0; --bg2:#0049A8; --bg3:#003C99; --bg4:#003080;
-      --card:#0b3a7a;
+      /* Фон страницы: белый + лёгкие голубые переливы */
+      --bg-white:#ffffff;
+      --bg-soft:#F7FBFF;
 
-      --accent:#19E0FF; --accent-2:#7AE7FF;
+      /* Карточки и границы */
+      --surface:#ffffff;
+      --surface-2:#F2F7FF;
+      --border:#E4EEFB;
+      --edge:#2B6FF6;     /* приятный синий для акцентных обводок */
 
-      --body:#2dd4bf; --mind:#60a5fa; --meaning:#a78bfa;
-      --empty:#275aaa;
+      /* Акценты */
+      --accent:#1877FF;
+      --accent-2:#19E0FF;
 
-      --edge:#2B6FF6; /* синий для обводок */
+      /* Цвета сфер */
+      --body:#2dd4bf;
+      --mind:#60a5fa;
+      --meaning:#a78bfa;
+
+      --empty:#D5E6FF; /* пустой сегмент кольца на светлом фоне */
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
+
+    /* ЕДИНЫЙ ФОН: вешаем на html, body прозрачный */
+    html{
+      background:
+        radial-gradient(1200px 600px at 12% -10%, rgba(122,231,255,.20), transparent 55%) fixed,
+        radial-gradient(1000px 520px at 88% -6%, rgba(25,224,255,.18), transparent 50%) fixed,
+        linear-gradient(180deg, var(--bg-white) 0%, var(--bg-soft) 100%) fixed;
+      background-color: var(--bg-white);
+    }
     body{
       margin:0;
       font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);
-      background:linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 35%, var(--bg3) 60%, var(--bg4) 100%);
+      background: transparent; /* важно, чтобы не было "второго" фона */
     }
+
     .wrap{max-width:900px;margin:0 auto;padding:16px 14px 120px}
 
     /* ===== Верхняя панель ===== */

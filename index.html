@@ -8,7 +8,7 @@
   <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- Прелоад hero для 1-го экрана онбординга (самый видимый) -->
+  <!-- Прелоад hero для 1-го экрана онбординга -->
   <link rel="preload" as="image" href="assets/onb-1.avif" imagesrcset="assets/onb-1.avif 1x, assets/onb-1.webp 1x, assets/onb-1.png 1x" />
 
   <style>
@@ -24,7 +24,7 @@
       --body:#2dd4bf; --mind:#60a5fa; --meaning:#a78bfa;
       --empty:#275aaa;
 
-      /* новый приятный синий для обводок кнопок */
+      /* приятный синий для обводок */
       --edge:#2B6FF6;
     }
 
@@ -143,22 +143,18 @@
     }
     input::placeholder{color:#9CCAFF}
 
-    /* Кнопка-галочка: белая и с новой синей обводкой */
-    /* Кнопка-галочка: светло-серый фон, белая галка */
+    /* Кнопка-галочка: светло-серый фон + вспышка цветом сферы */
     .submit{
       width:44px;height:44px;border-radius:12px;
-      background:#E6EDF9;                 /* светло-серый фон по умолчанию */
+      background:#E6EDF9;                 /* базовый светло-серый */
       border:1px solid var(--edge);
       display:grid;place-items:center;cursor:pointer;
       font-size:18px;color:#fff;font-weight:900;   /* галка белая */
       transition: background-color .2s ease;
     }
-
-    /* Вспышка (на 2 сек) цветом сферы */
     .submit.flash.s-body{   background: var(--body);   }
     .submit.flash.s-mind{   background: var(--mind);   }
     .submit.flash.s-meaning{background: var(--meaning);}
-
 
     .small{font-size:12px;color:var(--muted)}
 
@@ -220,10 +216,14 @@
     .dot.active{ background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.18) }
     .onb-skip{ background:none; border:0; color:#fff; font-weight:800; cursor:pointer; opacity:.9 }
     .onb-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; overflow:auto; padding:12px 18px 0; width:100% }
-    .onb-hero{ height:34%; min-height:160px; }
+    .onb-hero{ display:flex; align-items:center; justify-content:center; width:100%; height:34%; min-height:160px; }
     /* фикс позиции и размеров картинки */
     .hero-picture{ display:block; width:min(65%, 420px); margin:0 auto; }
     .hero-img{ display:block; width:100%; height:auto; object-fit:contain; contain:content; }
+    @media (max-width:380px){
+      .hero-picture{ width:min(70%, 360px); }
+      .onb-hero{ height:30%; min-height:140px; }
+    }
     .onb-h1{ font-size:24px; font-weight:900; margin:8px 0 6px; text-align:center }
     .onb-p{ font-size:14px; color:#E6F2FF; text-align:center; max-width:720px; margin:0 auto 8px }
     .onb-list{ display:grid; gap:6px; max-width:760px; margin:8px auto 8px; padding:0 8px; font-size:14px }
@@ -349,7 +349,7 @@
           <div class="title"><span class="dot" style="background:var(--meaning)"></span>Смысл и присутствие</div>
           <div class="small">
             <b>Описание.</b> Внутренняя опора на ценности, принятие переживаний и связь с «большим».<br/>
-            <b>Эффект.</b> Глубокий покой; сострадание к себе и другим; ясное «зачем».<br/>
+            <b>Эффект.</б> Глубокий покой; сострадание к себе и другим; ясное «зачем».<br/>
             <b>Что делать.</b> Медитация/созерцание 5–15 мин; дыхание 6 ц/мин 5–10 мин; 1 «акт ценности»/нед; рефлексивное чтение 10–20 мин.
           </div>
         </div>
@@ -392,8 +392,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const av = document.querySelector('.avatar');
     av.textContent = (u?.first_name || 'BB').slice(0,2).toUpperCase();
   }
-
-  
 
   /* CloudStorage */
   function cloudSupported(){ return !!(tg && tg.CloudStorage); }
@@ -547,13 +545,6 @@ window.addEventListener('DOMContentLoaded', () => {
     return cnt;
   }
 
-  function flashSubmit(s){
-    const btn = buttons[s];
-    btn.classList.add('flash', `s-${s}`);
-    setTimeout(()=> btn.classList.remove('flash', `s-${s}`), 2000);
-  }
-
-
   function renderBars(){
     ['body','mind','meaning'].forEach(s=>{
       const v = Math.max(0, Math.min(100, Math.round(state.scores[s]||0)));
@@ -621,6 +612,13 @@ window.addEventListener('DOMContentLoaded', () => {
     showOnboarding(2);
   });
 
+  /* вспышка цвета сферы у кнопки-галочки */
+  function flashSubmit(s){
+    const btn = buttons[s];
+    btn.classList.add('flash', `s-${s}`);
+    setTimeout(()=> btn.classList.remove('flash', `s-${s}`), 2000);
+  }
+
   /* Inputs */
   function bindInput(s){
     buttons[s].addEventListener('click', async ()=>{
@@ -628,10 +626,9 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!t) return;
       state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
       inputs[s].value='';
-      flashSubmit(s);                       // вот это добавь
+      flashSubmit(s);
       await doSaveAndRerender();
     });
-
     inputs[s].addEventListener('keydown', async (e)=>{
       if (e.key==='Enter'){
         e.preventDefault();
@@ -639,15 +636,14 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!t) return;
         state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
         inputs[s].value='';
-        flashSubmit(s);                     // и здесь тоже
+        flashSubmit(s);
         await doSaveAndRerender();
       }
     });
-
   }
   ['body','mind','meaning'].forEach(bindInput);
 
-  /* Telegram setup — убираем нижнюю MainButton */
+  /* Telegram setup — скрываем нижнюю MainButton */
   if (tg){
     tg.ready(); tg.expand(); applyTheme(); setHello();
     tg.onEvent('themeChanged', applyTheme);
@@ -834,8 +830,8 @@ window.addEventListener('DOMContentLoaded', () => {
     renderBars(); renderDayTitle(); renderDays(); renderList();
     streakEl.textContent = calcStreak();
 
-    // Прячем MainButton Телеги на всякий случай
-    try{ tg?.MainButton?.hide(); }catch{}
+    // скрываем MainButton Телеги
+    try{ tg?.MainButton?.hide(); tg?.MainButton?.offClick?.(); }catch{}
 
     // Покажем онбординг только при самом первом запуске
     const done = await getOnbDone();

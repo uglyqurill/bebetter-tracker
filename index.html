@@ -5,78 +5,51 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BeBetter · Трекер</title>
 
-  <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <!-- Прелоад hero для 1-го экрана онбординга -->
   <link rel="preload" as="image" href="assets/onb-1.avif" imagesrcset="assets/onb-1.avif 1x, assets/onb-1.webp 1x, assets/onb-1.png 1x" />
 
   <style>
     :root{
-      /* Текст/фон */
-      --text:#0D233B;           /* основной тёмный */
-      --text-muted:#516B8F;     /* подтекст */
-      --muted:#6D87A9;
+      --text:#ffffff;
+      --muted:#C7E2FF;
 
-      /* Фон страницы: белый + лёгкие голубые переливы */
-      --bg-white:#ffffff;
-      --bg-soft:#F7FBFF;
+      --bg1:#0F5CC0; --bg2:#0049A8; --bg3:#003C99; --bg4:#003080;
+      --card:#0b3a7a;
 
-      /* Карточки и границы */
-      --surface:#ffffff;
-      --surface-2:#F2F7FF;
-      --border:#E4EEFB;
-      --edge:#2B6FF6;     /* приятный синий для акцентных обводок */
+      --accent:#19E0FF; --accent-2:#7AE7FF;
 
-      /* Акценты */
-      --accent:#1877FF;
-      --accent-2:#19E0FF;
+      --body:#2dd4bf; --mind:#60a5fa; --meaning:#a78bfa;
+      --empty:#275aaa;
 
-      /* Цвета сфер */
-      --body:#2dd4bf;
-      --mind:#60a5fa;
-      --meaning:#a78bfa;
-
-      --empty:#D5E6FF; /* пустой сегмент кольца на светлом фоне */
+      --edge:#2B6FF6; /* приятный синий для обводок */
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
-
-    /* ЕДИНЫЙ ФОН: вешаем на html, body прозрачный */
-    html{
-      background:
-        radial-gradient(1200px 600px at 12% -10%, rgba(122,231,255,.20), transparent 55%) fixed,
-        radial-gradient(1000px 520px at 88% -6%, rgba(25,224,255,.18), transparent 50%) fixed,
-        linear-gradient(180deg, var(--bg-white) 0%, var(--bg-soft) 100%) fixed;
-      background-color: var(--bg-white);
-    }
     body{
       margin:0;
       font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);
-      background: transparent; /* важно, чтобы не было "второго" фона */
+      background:linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 35%, var(--bg3) 60%, var(--bg4) 100%);
     }
-
     .wrap{max-width:900px;margin:0 auto;padding:16px 14px 120px}
 
     /* ===== Верхняя панель ===== */
     .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
-    .hello{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;color:var(--text)}
+    .hello{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px}
     .hello .avatar{
       width:34px;height:34px;border-radius:999px;
-      background:linear-gradient(135deg,#E6F1FF,#D6E9FF);
-      border:1px solid var(--border);
-      display:grid;place-items:center;font-weight:800;color:#245
+      background:linear-gradient(135deg,#1b4f9e,#0f3c81);display:grid;place-items:center;
+      font-weight:800;color:#E7F3FF
     }
     .streak{
       display:flex;align-items:center;gap:8px;
-      background:#FFF8DE;
-      border:1px solid #FFE7A3;
+      background:linear-gradient(#0f3f87,#0c3270);
+      border:1px solid rgba(255,255,255,.22);
       border-radius:14px;padding:8px 12px;
-      color:#A06000;font-weight:800;min-width:72px;justify-content:center
+      color:#ffd166;font-weight:800;min-width:72px;justify-content:center
     }
-    .sep{height:1px;background:linear-gradient(90deg,transparent, rgba(24,46,86,.15), transparent);margin:12px 0}
+    .sep{height:1px;background:linear-gradient(90deg,transparent, rgba(255,255,255,.25), transparent);margin:12px 0}
 
     /* ===== Горизонтальный календарь ===== */
     .days{
@@ -86,20 +59,18 @@
     .day{
       flex:0 0 auto;scroll-snap-align:center;width:64px;border-radius:16px;padding:10px 8px;
       text-align:center;cursor:pointer;user-select:none;transition:transform .12s ease;
-      background:var(--surface);
-      border:1px solid var(--border);
-      box-shadow:0 2px 8px rgba(12,41,92,.04);
+      background:var(--card);border:1px solid rgba(255,255,255,.18)
     }
     .day:hover{transform:translateY(-2px)}
     .day.selected{
       background:
-        linear-gradient(180deg, rgba(25,119,255,.06), rgba(25,224,255,.06)) padding-box,
+        linear-gradient(180deg, rgba(25,224,255,.15), rgba(122,231,255,.08)) padding-box,
         linear-gradient(60deg, var(--body), var(--mind), var(--meaning)) border-box;
       border:1px solid transparent;
-      box-shadow:0 6px 18px rgba(25,119,255,.12);
+      box-shadow:0 0 16px rgba(122,231,255,.25);
     }
     .day .dow{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
-    .day .num{font-size:20px;font-weight:900;line-height:1.1;margin:4px 0 6px;color:var(--text)}
+    .day .num{font-size:20px;font-weight:900;line-height:1.1;margin:4px 0 6px;color:#fff}
 
     /* ===== Кольцо-секторы (контур) ===== */
     .ring{
@@ -119,170 +90,147 @@
     .ring::after{
       content:"";
       position:absolute; inset:0; border-radius:50%;
-      box-shadow: inset 0 0 0 2px rgba(13,35,59,.08);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.18);
     }
 
     /* ===== Прогресс-бары сфер ===== */
     .spheres{display:grid;grid-template-columns:1fr;gap:12px;margin:12px 0 10px}
     @media (min-width:740px){ .spheres{grid-template-columns:1fr 1fr 1fr} }
     .sphere{
-      background:var(--surface);
-      border:1px solid var(--border);border-radius:16px;padding:12px;
-      box-shadow:0 2px 10px rgba(12,41,92,.05);
+      background:linear-gradient(180deg,#0f3f87,#0c3270);
+      border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px
     }
     .sphere .row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-    .tag{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--text)}
+    .tag{display:inline-flex;align-items:center;gap:8px;font-weight:800}
     .tag .dot{width:10px;height:10px;border-radius:999px}
     .meter{
-      height:14px;border-radius:999px;background:#EEF5FF;
-      border:1px solid var(--border);overflow:hidden;position:relative
+      height:14px;border-radius:999px;background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.2);overflow:hidden;position:relative
     }
     .fill{height:100%;width:0%;transition: width .35s ease-out;}
-    .sphere[data-s="body"] .fill{ background:linear-gradient(90deg, var(--body), #6ef4e6); }
-    .sphere[data-s="mind"] .fill{ background:linear-gradient(90deg, var(--mind), #b9dcff); }
-    .sphere[data-s="meaning"] .fill{ background:linear-gradient(90deg, var(--meaning), #e1d8ff); }
-    .pct{font-variant-numeric:tabular-nums;color:var(--text);font-weight:800}
+    .sphere[data-s="body"] .fill{ background:linear-gradient(90deg, var(--body), #5ff4e3); }
+    .sphere[data-s="mind"] .fill{ background:linear-gradient(90deg, var(--mind), #a5d8ff); }
+    .sphere[data-s="meaning"] .fill{ background:linear-gradient(90deg, var(--meaning), #d8c9ff); }
+    .pct{font-variant-numeric:tabular-nums;color:#fff;font-weight:800}
 
     /* ===== Подпись дня + info ===== */
     .daytitle{display:flex;align-items:center;justify-content:space-between;margin:6px 0 6px}
-    .daytitle .label{font-weight:900;font-size:18px;color:var(--text)}
+    .daytitle .label{font-weight:900;font-size:18px;color:#fff}
     .icon-btn{
       width:36px;height:36px;border-radius:999px;
-      background:linear-gradient(#F5FAFF,#ECF5FF);
+      background:linear-gradient(#0f3f87,#0c3270);
       border:1px solid var(--edge);
-      display:grid;place-items:center;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease;
-      color:#0D233B; font-weight:900;
-      box-shadow:0 2px 10px rgba(12,41,92,.08);
+      display:grid;place-items:center;cursor:pointer;transition:transform .12s ease;
+      color:#fff; font-weight:900;
     }
-    .icon-btn:hover{transform:translateY(-1px); box-shadow:0 4px 14px rgba(12,41,92,.12);}
+    .icon-btn:hover{transform:translateY(-1px)}
 
     /* ===== Ввод побед ===== */
     .inputs{display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px}
     @media (min-width:740px){ .inputs{grid-template-columns:1fr 1fr 1fr} }
     .input-card{
-      background:var(--surface);
-      border:1px solid var(--border);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px;
-      box-shadow:0 2px 10px rgba(12,41,92,.05);
+      background:linear-gradient(180deg,#0f3f87,#0c3270);
+      border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px
     }
-    .input-card .hdr{display:flex;align-items:center;gap:8px;font-weight:800;color:var(--text)}
+    .input-card .hdr{display:flex;align-items:center;gap:8px;font-weight:800;color:#fff}
     .input{display:flex;gap:8px;align-items:center}
     input[type="text"]{
-      flex:1;padding:12px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;color:var(--text);outline:none;font-size:14px
+      flex:1;padding:12px 12px;border-radius:12px;border:1px solid #1A5ED1;background:#08356E;color:#fff;outline:none;font-size:14px
     }
-    input::placeholder{color:#8FA8C8}
+    input::placeholder{color:#9CCAFF}
 
-    /* Кнопка-галочка: прежний стиль, но в светлой теме */
+    /* Кнопка-галочка: вернули прежний фон; внутри — картинка */
     .submit{
       width:44px;height:44px;border-radius:12px;
-      background:linear-gradient(#F3F9FF,#E6F1FF);
+      background:linear-gradient(#0f3f87,#0c3270);
       border:1px solid var(--edge);
       display:grid;place-items:center;cursor:pointer;
-      padding:0; box-shadow:0 2px 10px rgba(12,41,92,.08);
+      padding:0;
     }
-    .submit img.check{ width:22px; height:22px; display:block; filter:none; }
+    .submit img.check{ width:22px; height:22px; display:block; }
 
-    .small{font-size:12px;color:var(--text-muted)}
+    .small{font-size:12px;color:var(--muted)}
 
     /* ===== Список побед ===== */
     .list{margin-top:12px; display:grid; gap:8px}
     .item{
-      background:var(--surface);
-      border:1px solid var(--border);border-radius:14px;padding:10px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-      box-shadow:0 2px 10px rgba(12,41,92,.05);
-      color:var(--text);
+      background:linear-gradient(180deg,#0f3f87,#0c3270);
+      border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px
     }
     .item .left{display:flex;align-items:flex-start;gap:8px}
-    .pill{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:#F4F8FF;color:var(--text)}
+    .pill{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff}
     .actions{display:flex;gap:6px}
     .btn{
       height:32px;min-width:32px;border-radius:10px;
-      background:linear-gradient(#F5FAFF,#ECF5FF);
+      background:linear-gradient(#0f3f87,#0c3270);
       border:1px solid var(--edge);
-      display:grid;place-items:center;cursor:pointer;color:#0D233B;font-weight:800;
-      box-shadow:0 2px 8px rgba(12,41,92,.08);
+      display:grid;place-items:center;cursor:pointer;color:#fff;font-weight:800
     }
 
     /* ===== Модалка ===== */
-    .modal{position:fixed;inset:0;background:rgba(5,10,20,.35);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+    .modal{position:fixed;inset:0;background:rgba(5,10,20,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
     .modal.show{display:flex}
     .sheet{
-      width:min(880px,96vw);max-height:86vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 14px 16px;color:var(--text);
-      box-shadow:0 20px 60px rgba(12,41,92,.18);
+      width:min(880px,96vw);max-height:86vh;overflow:auto;background:#0f3f87;border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:14px 14px 16px;color:#fff
     }
     .sheet h3{margin:6px 0 12px}
     .grid{display:grid;gap:10px}
     @media (min-width:740px){ .grid{grid-template-columns:1fr 1fr 1fr} }
-    .card{background:#FAFCFF;border:1px solid var(--border);border-radius:14px;padding:10px}
+    .card{background:#0c3270;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px}
     .card .title{display:flex;align-items:center;gap:8px;font-weight:900;margin-bottom:6px}
-    .card .small{color:var(--text);line-height:1.5}
     .card .small .lbl{font-weight:900}
     .modal .close{position:sticky;top:0;margin-left:auto;margin-bottom:8px}
 
     .onb-open-wrap{display:flex;justify-content:flex-end;margin-top:10px}
-    .btn-mini{height:40px;border-radius:12px;font-weight:900;cursor:pointer;color:#0D233B;
-      background:linear-gradient(#E7F2FF,#D9ECFF); border:1px solid var(--edge); padding:0 14px;
-      box-shadow:0 2px 10px rgba(12,41,92,.08);
+    .btn-mini{height:40px;border-radius:12px;font-weight:900;cursor:pointer;color:#00275f;
+      background:linear-gradient(#7AE7FF,#19E0FF); border:1px solid var(--edge); padding:0 14px;
     }
 
     .days::-webkit-scrollbar{height:8px}
-    .days::-webkit-scrollbar-thumb{background:rgba(24,46,86,.15);border-radius:8px}
+    .days::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:8px}
 
-    /* ===== Онбординг (светлая карточка, затемнённый фон) ===== */
-    .onb{
-      position:fixed; inset:0; z-index:50; display:none;
-      background:rgba(7,20,45,.45);
-      backdrop-filter: blur(6px);
-      color:var(--text);
-    }
+    /* ===== Онбординг ===== */
+    .onb{ position:fixed; inset:0; z-index:50; display:none;
+      background:linear-gradient(180deg,rgba(8,24,64,.85), rgba(8,24,64,.95));
+      backdrop-filter: blur(6px); color:#fff; }
     .onb.show{ display:flex; align-items:center; justify-content:center; padding:18px; }
     .onb-card{
       width:min(860px,96vw); height:min(92vh,860px);
-      background:var(--surface);
-      border:1px solid var(--border); border-radius:22px;
+      background:linear-gradient(180deg,#0f3f87,#0c3270);
+      border:1px solid rgba(255,255,255,.22); border-radius:22px;
       display:flex; flex-direction:column; overflow:hidden;
-      box-shadow:0 24px 70px rgba(12,41,92,.22);
     }
     .onb-top{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; }
     .onb-dots{ display:flex; gap:8px; align-items:center; }
-    .dot{ width:8px; height:8px; border-radius:999px; background:rgba(24,35,59,.25); }
-    .dot.active{ background:#0D233B; box-shadow:0 0 0 3px rgba(24,35,59,.14) }
-    .onb-skip{ background:none; border:0; color:#0D233B; font-weight:800; cursor:pointer; opacity:.9 }
-
-    .onb-body{
-      flex:1; display:flex; flex-direction:column; align-items:center;
-      overflow:auto; padding:6px 18px 0; width:100%;
-    }
-
-    .onb-hero{
-      display:flex; align-items:center; justify-content:center; width:100%;
-      padding:12px 0 10px; margin:4px 0 8px;
-    }
-    .onb-hero.sm{ padding:10px 0 8px; margin:2px 0 8px; }
-
-    .hero-picture{ display:block; width:min(58%, 360px); max-width:360px; margin:0 auto; }
-    .hero-picture.sm{ width:min(42%, 280px); max-width:280px; }
+    .dot{ width:8px; height:8px; border-radius:999px; background:rgba(255,255,255,.35); }
+    .dot.active{ background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.18) }
+    .onb-skip{ background:none; border:0; color:#fff; font-weight:800; cursor:pointer; opacity:.9 }
+    .onb-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; overflow:auto; padding:12px 18px 0; width:100% }
+    .onb-hero{ display:flex; align-items:center; justify-content:center; width:100%; height:34%; min-height:160px; }
+    .onb-hero.sm{ height:28%; min-height:120px; }
+    .hero-picture{ display:block; width:min(65%, 420px); margin:0 auto; } /* дефолт — норм для экрана 4 */
+    .hero-picture.sm{ width:min(46%, 300px); } /* уменьшенные для экранов 2 и 3 */
     .hero-img{ display:block; width:100%; height:auto; object-fit:contain; contain:content; }
-
     @media (max-width:380px){
-      .hero-picture{ width:min(64%, 300px); max-width:300px; }
-      .hero-picture.sm{ width:min(54%, 240px); max-width:240px; }
+      .hero-picture{ width:min(68%, 340px); } 
+      .hero-picture.sm{ width:min(58%, 260px); }
+      .onb-hero{ height:30%; min-height:140px; }
+      .onb-hero.sm{ height:26%; min-height:110px; }
     }
-
-    .onb-h1{ font-size:24px; font-weight:900; margin:6px 0 6px; text-align:center; color:var(--text) }
-    .onb-p{ font-size:14px; color:var(--text-muted); text-align:center; max-width:720px; margin:0 auto 8px }
-    .onb-list{ display:grid; gap:6px; max-width:760px; margin:8px auto 8px; padding:0 8px; font-size:14px; line-height:1.45; color:var(--text) }
-    .onb-list b{ font-weight:900 }
-    .onb-hint{ color:var(--text-muted); font-size:12px; text-align:center; margin-top:4px }
+    .onb-h1{ font-size:24px; font-weight:900; margin:8px 0 6px; text-align:center }
+    .onb-p{ font-size:14px; color:#E6F2FF; text-align:center; max-width:720px; margin:0 auto 8px }
+    .onb-list{ display:grid; gap:6px; max-width:760px; margin:8px auto 8px; padding:0 8px; font-size:14px }
+    .onb-list b{ font-weight:900 } /* «Что это», «Зачем нужно», «Что будешь фиксировать» */
+    .onb-hint{ color:#C7E2FF; opacity:.9; font-size:12px; text-align:center; margin-top:4px }
     .onb-cta{ padding:12px 16px; display:grid; gap:8px }
     .btn-primary{
-      height:48px; border-radius:14px; font-weight:900; cursor:pointer; color:#0D233B;
-      background:linear-gradient(#DDF1FF,#CBE9FF); border:1px solid var(--edge);
-      box-shadow:0 2px 12px rgba(12,41,92,.1);
+      height:48px; border-radius:14px; font-weight:900; cursor:pointer; color:#00275f;
+      background:linear-gradient(#7AE7FF,#19E0FF); border:1px solid var(--edge);
     }
     .btn-ghost{
-      height:44px; border-radius:14px; font-weight:800; cursor:pointer; color:#0D233B;
-      background:transparent; border:1px dashed rgba(24,35,59,.35)
+      height:44px; border-radius:14px; font-weight:800; cursor:pointer; color:#fff;
+      background:transparent; border:1px dashed rgba(255,255,255,.35)
     }
     .swipe{ touch-action:pan-y; }
   </style>
@@ -696,7 +644,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const onbSkip = document.getElementById('onbSkip');
   const onbCard = document.getElementById('onbCard');
 
-  // helper: picture HTML (AVIF → WebP → PNG) с классом размера
+  // helper: picture HTML (AVIF → WebP → PNG) с кастом-классом размера
   function heroPicture(base, alt, eager=false, sizeClass=''){
     const loading = eager ? 'eager' : 'lazy';
     return `
@@ -802,9 +750,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     const listHtml = slide.items.map(x=> `<div>${x}</div>`).join('');
     onbBody.innerHTML = `
-      <div class="onb-hero ${sizeClass}">
-        ${heroPicture(slide.base,'Онбординг — иллюстрация', false, '${sizeClass}')}
-      </div>
+      <div class="onb-hero">${heroPicture(slide.base,'Онбординг — иллюстрация',false,'${sizeClass}')}</div>
       <div class="onb-h1">${slide.h1}</div>
       <div class="onb-list">${listHtml}</div>
       <div class="onb-hint">${slide.hint}</div>
@@ -879,5 +825,4 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
 

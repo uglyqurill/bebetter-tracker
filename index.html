@@ -9,47 +9,67 @@
   <link rel="preload" as="image" href="assets/onb-1.avif" imagesrcset="assets/onb-1.avif 1x, assets/onb-1.webp 1x, assets/onb-1.png 1x" />
 
   <style>
-    :root{
-      --text:#ffffff;
-      --muted:#C7E2FF;
+/* ========= THEME: Light paper with subtle aqua ========= */
 
-      --bg1:#0F5CC0; --bg2:#0049A8; --bg3:#003C99; --bg4:#003080;
-      --card:#0b3a7a;
+/* 1) Палитра */
+  :root{
+    /* тёмно-синий для текста на светлом фоне */
+    --ink:#0A2A6C;
+    --ink-sub:#274C9A;
 
-      --accent:#19E0FF; --accent-2:#7AE7FF;
+    /* фон */
+    --paper:#FFFFFF;
+    --paper-2:#F7FAFF;
 
-      --body:#2dd4bf; --mind:#60a5fa; --meaning:#a78bfa;
-      --empty:#275aaa;
+    /* светлые/мутные */
+    --muted:#6B93C2;
 
-      --edge:#2B6FF6; /* приятный синий для обводок */
-    }
+    /* белый текст — для тёмных карточек */
+    --text:#ffffff;
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
-      background:linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 35%, var(--bg3) 60%, var(--bg4) 100%);
-    }
-    .wrap{max-width:900px;margin:0 auto;padding:16px 14px 120px}
+    /* тёмные карточки остаются прежними */
+    --card:#0b3a7a;
 
-    /* ===== Верхняя панель ===== */
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
-    .hello{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px}
-    .hello .avatar{
-      width:34px;height:34px;border-radius:999px;
-      background:linear-gradient(135deg,#1b4f9e,#0f3c81);display:grid;place-items:center;
-      font-weight:800;color:#E7F3FF
-    }
-    .streak{
-      display:flex;align-items:center;gap:8px;
-      background:linear-gradient(#0f3f87,#0c3270);
-      border:1px solid rgba(255,255,255,.22);
-      border-radius:14px;padding:8px 12px;
-      color:#ffd166;font-weight:800;min-width:72px;justify-content:center
-    }
-    .sep{height:1px;background:linear-gradient(90deg,transparent, rgba(255,255,255,.25), transparent);margin:12px 0}
+    --accent:#19E0FF; --accent-2:#7AE7FF;
+    --body:#2dd4bf; --mind:#60a5fa; --meaning:#a78bfa;
+
+    /* пустой сегмент колечка календаря — светлый на белом фоне */
+    --empty:#d9e6ff;
+
+    --edge:#2B6FF6;
+  }
+
+  /* 2) Единый фон на всю высоту страницы (без «второго» цвета внизу) */
+  html, body{ height:auto; min-height:100%; }
+  body{
+    margin:0;
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--ink);
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(1200px 800px at 12% -10%, rgba(64,156,255,.20), transparent 42%),
+      radial-gradient(900px 700px at 88% -6%, rgba(0,128,255,.12), transparent 38%),
+      linear-gradient(180deg, #FFFFFF 0%, var(--paper-2) 100%);
+    background-attachment: fixed, fixed, fixed; /* фиксируем — фон один везде */
+    background-repeat: no-repeat;
+  }
+
+  /* 3) Приветствие и заголовок дня — тёмно-синие */
+  .hello{ color:var(--ink); }           /* «Привет, Имя!» */
+  .daytitle .label{ color:var(--ink); } /* «Сегодня/Вчера/Завтра» */
+
+  /* 4) Календарное кольцо: светлый «пустой» контур на белом фоне */
+  .ring{ --seg1: var(--empty); --seg2: var(--empty); --seg3: var(--empty); }
+  /* (активные сегменты устанавливаются инлайном в JS, как и раньше) */
+
+  /* 5) Белый текст внутри тёмных блоков (карточки/списки/формы) */
+  .sphere, .input-card, .item, .card, .sheet{ color:#fff; }
+  .item .small{ color:#C7E2FF; } /* подпись с датой в списке — нежно-голубая */
+
+  /* 6) Прочие элементы, у которых раньше текст был явно белым — оставить */
+  .pct{ color:#fff; }            /* 3/100 на барах */
+  .icon-btn{ color:#fff; }       /* кнопка i */
+  input::placeholder{ color:#9CCAFF; }
 
     /* ===== Горизонтальный календарь ===== */
     .days{

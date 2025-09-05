@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BeBetter · Трекер</title>
 
-  <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <!-- Прелоад hero для 1-го экрана онбординга -->
   <link rel="preload" as="image" href="assets/onb-1.avif" imagesrcset="assets/onb-1.avif 1x, assets/onb-1.webp 1x, assets/onb-1.png 1x" />
 
   <style>
@@ -24,8 +21,7 @@
       --body:#2dd4bf; --mind:#60a5fa; --meaning:#a78bfa;
       --empty:#275aaa;
 
-      /* приятный синий для обводок */
-      --edge:#2B6FF6;
+      --edge:#2B6FF6; /* приятный синий для обводок */
     }
 
     *{box-sizing:border-box}
@@ -76,7 +72,7 @@
     .day .dow{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
     .day .num{font-size:20px;font-weight:900;line-height:1.1;margin:4px 0 6px;color:#fff}
 
-    /* ===== Кольцо-секторы (аккуратный контур) ===== */
+    /* ===== Кольцо-секторы (контур) ===== */
     .ring{
       --seg1: var(--empty);
       --seg2: var(--empty);
@@ -143,18 +139,15 @@
     }
     input::placeholder{color:#9CCAFF}
 
-    /* Кнопка-галочка: светло-серый фон + вспышка цветом сферы */
+    /* Кнопка-галочка: вернули прежний фон; внутри — картинка */
     .submit{
       width:44px;height:44px;border-radius:12px;
-      background:#E6EDF9;                 /* базовый светло-серый */
+      background:linear-gradient(#0f3f87,#0c3270);
       border:1px solid var(--edge);
       display:grid;place-items:center;cursor:pointer;
-      font-size:18px;color:#fff;font-weight:900;   /* галка белая */
-      transition: background-color .2s ease;
+      padding:0;
     }
-    .submit.flash.s-body{   background: var(--body);   }
-    .submit.flash.s-mind{   background: var(--mind);   }
-    .submit.flash.s-meaning{background: var(--meaning);}
+    .submit img.check{ width:22px; height:22px; display:block; }
 
     .small{font-size:12px;color:var(--muted)}
 
@@ -186,6 +179,7 @@
     @media (min-width:740px){ .grid{grid-template-columns:1fr 1fr 1fr} }
     .card{background:#0c3270;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px}
     .card .title{display:flex;align-items:center;gap:8px;font-weight:900;margin-bottom:6px}
+    .card .small .lbl{font-weight:900}
     .modal .close{position:sticky;top:0;margin-left:auto;margin-bottom:8px}
 
     .onb-open-wrap{display:flex;justify-content:flex-end;margin-top:10px}
@@ -196,13 +190,10 @@
     .days::-webkit-scrollbar{height:8px}
     .days::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:8px}
 
-    /* ===== Онбординг (full-screen overlay) ===== */
-    .onb{
-      position:fixed; inset:0; z-index:50; display:none;
+    /* ===== Онбординг ===== */
+    .onb{ position:fixed; inset:0; z-index:50; display:none;
       background:linear-gradient(180deg,rgba(8,24,64,.85), rgba(8,24,64,.95));
-      backdrop-filter: blur(6px);
-      color:#fff;
-    }
+      backdrop-filter: blur(6px); color:#fff; }
     .onb.show{ display:flex; align-items:center; justify-content:center; padding:18px; }
     .onb-card{
       width:min(860px,96vw); height:min(92vh,860px);
@@ -217,16 +208,18 @@
     .onb-skip{ background:none; border:0; color:#fff; font-weight:800; cursor:pointer; opacity:.9 }
     .onb-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; overflow:auto; padding:12px 18px 0; width:100% }
     .onb-hero{ display:flex; align-items:center; justify-content:center; width:100%; height:34%; min-height:160px; }
-    /* фикс позиции и размеров картинки */
-    .hero-picture{ display:block; width:min(65%, 420px); margin:0 auto; }
+    .hero-picture{ display:block; width:min(65%, 420px); margin:0 auto; } /* дефолт — норм для экрана 4 */
+    .hero-picture.sm{ width:min(55%, 360px); } /* уменьшенные для экранов 2 и 3 */
     .hero-img{ display:block; width:100%; height:auto; object-fit:contain; contain:content; }
     @media (max-width:380px){
       .hero-picture{ width:min(70%, 360px); }
+      .hero-picture.sm{ width:min(62%, 320px); }
       .onb-hero{ height:30%; min-height:140px; }
     }
     .onb-h1{ font-size:24px; font-weight:900; margin:8px 0 6px; text-align:center }
     .onb-p{ font-size:14px; color:#E6F2FF; text-align:center; max-width:720px; margin:0 auto 8px }
     .onb-list{ display:grid; gap:6px; max-width:760px; margin:8px auto 8px; padding:0 8px; font-size:14px }
+    .onb-list b{ font-weight:900 } /* «Что это», «Зачем нужно», «Что будешь фиксировать» */
     .onb-hint{ color:#C7E2FF; opacity:.9; font-size:12px; text-align:center; margin-top:4px }
     .onb-cta{ padding:12px 16px; display:grid; gap:8px }
     .btn-primary{
@@ -294,7 +287,9 @@
         <div class="hdr"><span class="dot" style="background:var(--body)"></span>Тело и энергия</div>
         <div class="input">
           <input id="inp-body" type="text" placeholder="Напр.: 30 мин ходьбы · зарядка" />
-          <button class="submit" id="btn-body" title="Добавить победу">✔</button>
+          <button class="submit" id="btn-body" title="Добавить победу">
+            <img class="check" src="assets/check.webp" alt="Добавить" />
+          </button>
         </div>
         <div class="small">1-я победа дня: +3, последующие сегодня: +1</div>
       </div>
@@ -303,7 +298,9 @@
         <div class="hdr"><span class="dot" style="background:var(--mind)"></span>Ум и фокус</div>
         <div class="input">
           <input id="inp-mind" type="text" placeholder="Напр.: 2 фокус-сета · заметка CBT" />
-          <button class="submit" id="btn-mind" title="Добавить победу">✔</button>
+          <button class="submit" id="btn-mind" title="Добавить победу">
+            <img class="check" src="assets/check.webp" alt="Добавить" />
+          </button>
         </div>
         <div class="small">1-я победа дня: +3, последующие сегодня: +1</div>
       </div>
@@ -312,7 +309,9 @@
         <div class="hdr"><span class="dot" style="background:var(--meaning)"></span>Смысл и присутствие</div>
         <div class="input">
           <input id="inp-meaning" type="text" placeholder="Напр.: 10 мин медитации · акт ценности" />
-          <button class="submit" id="btn-meaning" title="Добавить победу">✔</button>
+          <button class="submit" id="btn-meaning" title="Добавить победу">
+            <img class="check" src="assets/check.webp" alt="Добавить" />
+          </button>
         </div>
         <div class="small">1-я победа дня: +3, последующие сегодня: +1</div>
       </div>
@@ -332,30 +331,29 @@
         <div class="card">
           <div class="title"><span class="dot" style="background:var(--body)"></span>Тело и энергия</div>
           <div class="small">
-            <b>Описание.</b> База жизненной силы: движение, сон, питание и восстановление.<br/>
-            <b>Эффект.</b> Больше энергии и стабильное настроение; меньше стресса; лучше форма и здоровье.<br/>
-            <b>Что делать.</b> 7–10 тыс. шагов/день; 150 мин кардио/нед + силовые 2×; сон 7–9 ч; белок и овощи каждый день.
+            <span class="lbl">Описание.</span> База жизненной силы: движение, сон, питание и восстановление.<br/>
+            <span class="lbl">Эффект.</span> Больше энергии и стабильное настроение; меньше стресса; лучше форма и здоровье.<br/>
+            <span class="lbl">Что делать.</span> 7–10 тыс. шагов/день; 150 мин кардио/нед + силовые 2×; сон 7–9 ч; белок и овощи каждый день.
           </div>
         </div>
         <div class="card">
           <div class="title"><span class="dot" style="background:var(--mind)"></span>Ум и фокус</div>
           <div class="small">
-            <b>Описание.</b> Навыки внимания и мышления: как выбираешь фокус, говоришь с собой, учишься и принимаешь решения.<br/>
-            <b>Эффект.</b> Меньше тревоги и «шума»; больше ясности и дисциплины; быстрее учишься и доводишь дела.<br/>
-            <b>Что делать.</b> Фокус-сеты 25–50 мин; дневник мыслей (CBT) 1 запись/день; 3 благодарности; учёба 30–60 мин с самотестом.
+            <span class="lbl">Описание.</span> Навыки внимания и мышления: как выбираешь фокус, говоришь с собой, учишься и принимаешь решения.<br/>
+            <span class="lbl">Эффект.</span> Меньше тревоги и «шума»; больше ясности и дисциплины; быстрее учишься.<br/>
+            <span class="lbl">Что делать.</span> Фокус-сеты 25–50 мин; дневник мыслей (CBT) 1 запись/день; 3 благодарности; учёба 30–60 мин с самотестом.
           </div>
         </div>
         <div class="card">
           <div class="title"><span class="dot" style="background:var(--meaning)"></span>Смысл и присутствие</div>
           <div class="small">
-            <b>Описание.</b> Внутренняя опора на ценности, принятие переживаний и связь с «большим».<br/>
-            <b>Эффект.</б> Глубокий покой; сострадание к себе и другим; ясное «зачем».<br/>
-            <b>Что делать.</b> Медитация/созерцание 5–15 мин; дыхание 6 ц/мин 5–10 мин; 1 «акт ценности»/нед; рефлексивное чтение 10–20 мин.
+            <span class="lbl">Описание.</span> Внутренняя опора на ценности, принятие переживаний и связь с «большим».<br/>
+            <span class="lbl">Эффект.</span> Глубокий покой; сострадание к себе и другим; ясное «зачем».<br/>
+            <span class="lbl">Что делать.</span> Медитация/созерцание 5–15 мин; дыхание 6 ц/мин 5–10 мин; 1 «акт ценности»/нед; рефлексивное чтение 10–20 мин.
           </div>
         </div>
       </div>
 
-      <!-- Кнопка перезапуска онбординга (экраны 2–4) -->
       <div class="onb-open-wrap">
         <button class="btn-mini" id="reopenOnb">Краткий онбординг</button>
       </div>
@@ -402,11 +400,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const uuid = () => (crypto?.randomUUID) ? crypto.randomUUID() : 'id-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
   const fmtISO = (d)=> new Date(d).toISOString().slice(0,10);
   const todayISO = ()=> fmtISO(new Date());
-  const addDays = (iso,dx)=> {
-    const dt = new Date(iso);
-    dt.setDate(dt.getDate()+dx);
-    return fmtISO(dt);
-  };
+  const addDays = (iso,dx)=> { const dt = new Date(iso); dt.setDate(dt.getDate()+dx); return fmtISO(dt); };
   const diffDays = (a,b)=> Math.round((new Date(a)-new Date(b))/86400000);
   const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
@@ -506,11 +500,9 @@ window.addEventListener('DOMContentLoaded', () => {
       dv.dataset.iso = cur;
 
       const dow = document.createElement('div');
-      dow.className = 'dow';
-      dow.textContent = DOW[new Date(cur).getDay()];
+      dow.className = 'dow'; dow.textContent = DOW[new Date(cur).getDay()];
       const num = document.createElement('div');
-      num.className = 'num';
-      num.textContent = new Date(cur).getDate();
+      num.className = 'num'; num.textContent = new Date(cur).getDate();
 
       const r = document.createElement('div');
       r.className = 'ring';
@@ -518,9 +510,7 @@ window.addEventListener('DOMContentLoaded', () => {
       r.style.setProperty('--seg2', dayHasSphere(cur,'mind') ? 'var(--mind)' : 'var(--empty)');
       r.style.setProperty('--seg3', dayHasSphere(cur,'meaning') ? 'var(--meaning)' : 'var(--empty)');
 
-      dv.appendChild(dow);
-      dv.appendChild(num);
-      dv.appendChild(r);
+      dv.appendChild(dow); dv.appendChild(num); dv.appendChild(r);
 
       dv.addEventListener('click', ()=>{
         selectedDate = dv.dataset.iso;
@@ -612,13 +602,6 @@ window.addEventListener('DOMContentLoaded', () => {
     showOnboarding(2);
   });
 
-  /* вспышка цвета сферы у кнопки-галочки */
-  function flashSubmit(s){
-    const btn = buttons[s];
-    btn.classList.add('flash', `s-${s}`);
-    setTimeout(()=> btn.classList.remove('flash', `s-${s}`), 2000);
-  }
-
   /* Inputs */
   function bindInput(s){
     buttons[s].addEventListener('click', async ()=>{
@@ -626,7 +609,6 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!t) return;
       state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
       inputs[s].value='';
-      flashSubmit(s);
       await doSaveAndRerender();
     });
     inputs[s].addEventListener('keydown', async (e)=>{
@@ -636,7 +618,6 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!t) return;
         state.items.push({ id: uuid(), text: t, sphere: s, date: selectedDate, ts: Date.now() });
         inputs[s].value='';
-        flashSubmit(s);
         await doSaveAndRerender();
       }
     });
@@ -661,11 +642,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const onbSkip = document.getElementById('onbSkip');
   const onbCard = document.getElementById('onbCard');
 
-  // helper: picture HTML (AVIF → WebP → PNG)
-  function heroPicture(base, alt, eager=false){
+  // helper: picture HTML (AVIF → WebP → PNG) с кастом-классом размера
+  function heroPicture(base, alt, eager=false, sizeClass=''){
     const loading = eager ? 'eager' : 'lazy';
     return `
-      <picture class="hero-picture">
+      <picture class="hero-picture ${sizeClass}">
         <source type="image/avif" srcset="${base}.avif">
         <source type="image/webp" srcset="${base}.webp">
         <img class="hero-img" src="${base}.png" alt="${alt}" loading="${loading}" decoding="async" width="800" height="600"/>
@@ -759,12 +740,15 @@ window.addEventListener('DOMContentLoaded', () => {
     const slide = slides[idx-1];
     renderDots(idx);
     onbSkip.style.display = slide.skip ? 'inline' : 'none';
+
+    const sizeClass = (slide.id===2 || slide.id===3) ? 'sm' : '';
+
     if (idx === 1){
       slide.renderBody(); return;
     }
     const listHtml = slide.items.map(x=> `<div>${x}</div>`).join('');
     onbBody.innerHTML = `
-      <div class="onb-hero">${heroPicture(slide.base,'Онбординг — иллюстрация')}</div>
+      <div class="onb-hero">${heroPicture(slide.base,'Онбординг — иллюстрация',false,'${sizeClass}')}</div>
       <div class="onb-h1">${slide.h1}</div>
       <div class="onb-list">${listHtml}</div>
       <div class="onb-hint">${slide.hint}</div>
@@ -809,12 +793,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
   let curSlide = 1;
   function go(n){
-    if (n < 2 && curSlide >= 2) n = 2; // не даём вернуться на 1-й при «кратком»
+    if (n < 2 && curSlide >= 2) n = 2; // при «кратком» не возвращаемся на 1-й
     curSlide = n;
     renderSlide(n);
   }
 
-  // прелоад прочих изображений
+  // прелоад изображений
   ['assets/onb-2-body.avif','assets/onb-3-mind.avif','assets/onb-4-meaning.avif']
     .forEach(src=>{ const im = new Image(); im.src = src; });
 
@@ -830,10 +814,8 @@ window.addEventListener('DOMContentLoaded', () => {
     renderBars(); renderDayTitle(); renderDays(); renderList();
     streakEl.textContent = calcStreak();
 
-    // скрываем MainButton Телеги
     try{ tg?.MainButton?.hide(); tg?.MainButton?.offClick?.(); }catch{}
 
-    // Покажем онбординг только при самом первом запуске
     const done = await getOnbDone();
     if (!done){ showOnboarding(1); }
   })();
@@ -841,3 +823,4 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
